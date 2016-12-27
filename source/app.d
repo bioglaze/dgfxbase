@@ -1,0 +1,83 @@
+import derelict.sdl2.sdl;
+import derelict.util.exception;
+import derelict.opengl3.gl3;
+import std.stdio;
+import std.string;
+import renderer;
+import mesh;
+
+void main()
+{
+    DerelictSDL2.load();
+        
+    if (SDL_Init( SDL_INIT_EVERYTHING ) < 0)
+    {
+        const(char)* message = SDL_GetError();
+        writeln( "Failed to initialize SDL: ", message );
+    }
+        
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+    SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 5 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
+
+    immutable int screenWidth = 1024;
+    immutable int screenHeight = 768;
+
+    SDL_Window* win = SDL_CreateWindow( "GFX base", SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
+
+    ShouldThrow missingSymFunc( string symName )
+    {
+        if (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d")
+        {
+            return ShouldThrow.No;
+        }
+
+        return ShouldThrow.Yes;
+    }
+
+    DerelictGL3.missingSymbolCallback = &missingSymFunc;
+    DerelictGL3.load();
+    const auto context = SDL_GL_CreateContext( win );
+        
+    if (!context)
+    {
+        throw new Error( "Failed to create GL context!" );
+    }
+        
+    DerelictGL3.reload();
+      
+    Renderer renderer = new Renderer();
+
+    SDL_GL_SetSwapInterval( 1 );
+    
+    Mesh mesh = new Mesh( "assets/cube.obj" );
+
+    bool quit = false;
+
+    while (!quit)
+    {
+        SDL_Event e;
+
+        while (SDL_PollEvent( &e ))
+        {
+            if (e.type == SDL_WINDOWEVENT)
+            {
+                if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+                {
+                    return;
+                }
+            }
+            else if (e.type == SDL_QUIT)
+            {
+                return;
+            }
+        }
+
+        glClear( GL_COLOR_BUFFER_BIT );
+        SDL_GL_SwapWindow( win );
+    }
+}
