@@ -1,6 +1,8 @@
 import derelict.opengl3.gl3;
 import std.stdio;
 import std.string;
+import vec3;
+import mesh;
 
 public align(1) struct Vertex
 {
@@ -75,13 +77,14 @@ extern(System) private
 
 public class Renderer
 {
-    this()
+    public static void init()
     {
         if (KHR_debug())
         {
             glDebugMessageCallback( &loggingCallbackOpenGL, null );
-            glEnable( GL_DEBUG_OUTPUT );
             glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
+            glEnable( GL_DEBUG_OUTPUT );
+            glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
         }
         else
         {
@@ -92,32 +95,39 @@ public class Renderer
         glClearColor( 1, 0, 0, 1 );
     }
 
+    public static void clearScreen()
+    {
+        glClear( GL_COLOR_BUFFER_BIT );
+    }
+
+    public static void renderMesh( Mesh mesh, Vec3 position )
+    {
+        //glDrawElements( GL_TRIANGLES, mesh.getElementCount(), GL_UNSIGNED_SHORT, cast(GLvoid*)0 );
+    }
+
     public static void generateVAO( Vertex[] vertices, Face[] faces, string debugName, out uint vao )
     {
-        glGenVertexArrays( 1, &vao );
+        glCreateVertexArrays( 1, &vao );
         glBindVertexArray( vao );
 
         uint vbo, ibo;
-        glGenBuffers( 1, &vbo );
-        glBindBuffer( GL_ARRAY_BUFFER, vbo );
+        glCreateBuffers( 1, &vbo );
         const(char*) str = "vbo";
-        //glObjectLabel( GL_BUFFER, vbo, -1, 1, str );
+        //glObjectLabel( GL_BUFFER, vbo, -1, -1, str );
 
-        GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glBufferStorage( GL_ARRAY_BUFFER, vertices.length * Vertex.sizeof, vertices.ptr, flags );
+        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage( vbo, vertices.length * Vertex.sizeof, vertices.ptr, flags );
 
-        glGenBuffers( 1, &ibo );
-        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo );
+        glCreateBuffers( 1, &ibo );
         const(char*) str2 = "ibo";
         //glObjectLabel( GL_BUFFER, ibo, -1, 1, str2 );
 
-        flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glBufferStorage( GL_ELEMENT_ARRAY_BUFFER, faces.length * Face.sizeof, faces.ptr, flags );
+        glNamedBufferStorage( ibo, faces.length * Face.sizeof, faces.ptr, flags );
 
-        glEnableVertexAttribArray( 0 );
-        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, Vertex.sizeof, null );
+        glVertexAttribFormat( 0, 3, GL_FLOAT, GL_FALSE, 0 );
+        glVertexAttribBinding( 0, 0 );
 
-        glEnableVertexAttribArray( 1 );
-        glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, Vertex.sizeof, cast(char*)0 + 3 * 4 );
+        glVertexAttribFormat( 0, 2, GL_FLOAT, GL_FALSE, 3 * 4 );
+        glVertexAttribBinding( 1, 0 );
     }
 }

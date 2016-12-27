@@ -1,8 +1,9 @@
 # dgfxbase
-OpenGL 4.5 basecode using D language and Derelict
+OpenGL 4.5 basecode using D language and Derelict SDL and OpenGL libraries.
 
 ## Features
 
   - GL debug message callback
   - GL object debug labels
-  - glBufferStorage
+  - Direct State Access
+  - Uniform buffers

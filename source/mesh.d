@@ -5,12 +5,18 @@ import std.math;
 import derelict.opengl3.gl3;
 import vec3;
 import renderer;
+import matrix4x4;
 
 private struct ObjFace
 {
     ushort v1, v2, v3;
     ushort t1, t2, t3;
     ushort n1, n2, n3;
+}
+
+public struct PerObjectUBO
+{
+    Matrix4x4 mvp;
 }
 
 public class Mesh
@@ -25,6 +31,13 @@ public class Mesh
         loadObj( path, vertices, normals, texcoords, faces );
         interleave( vertices, normals, texcoords, faces );
         Renderer.generateVAO( interleavedVertices, indices, path, vao );
+    }
+
+    public void updateUBO()
+    {
+		GLvoid* p = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+		//memcpy( p, &ubo, PerObjectUBO.sizeof );
+        glUnmapBuffer( GL_UNIFORM_BUFFER );
     }
 
     // Tested only with models exported from Blender. File must contain one mesh only,
@@ -48,7 +61,7 @@ public class Mesh
                 Vec3 vertex;
                 string v;
                 uint items = formattedRead( line, "%s %f %f %f", &v, &vertex.x, &vertex.y, &vertex.z );
-                assert( items == 4, "parse error readin .obj file" );
+                assert( items == 4, "parse error reading .obj file" );
                 vertices ~= vertex;
             }
             else if (line.length > 0 && line[ 0..2 ] == "vn")
@@ -56,7 +69,7 @@ public class Mesh
                 Vec3 normal;
                 string v;
                 uint items = formattedRead( line, "%s %f %f %f", &v, &normal.x, &normal.y, &normal.z );
-                assert( items == 4, "parse error readin .obj file" );
+                assert( items == 4, "parse error reading .obj file" );
                 normals ~= normal;
             }
             else if (line.length > 0 && line[ 0..2 ] == "vt")
@@ -64,7 +77,7 @@ public class Mesh
                 Vec3 texcoord;
                 string v;
                 uint items = formattedRead( line, "%s %f %f", &v, &texcoord.x, &texcoord.y );
-                assert( items == 3, "parse error readin .obj file" );
+                assert( items == 3, "parse error reading .obj file" );
                 texcoords ~= texcoord;
             }
         }
@@ -82,6 +95,8 @@ public class Mesh
                 uint items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
                                             &face.v2, &face.t2, &face.n2,
                                             &face.v3, &face.t3, &face.n3 );
+                assert( items == 10, "parse error reading .obj file" );
+
                 // OBJ faces are 1-indexed, convert to 0-indexed.
                 --face.v1;
                 --face.v2;
@@ -211,11 +226,6 @@ public class Mesh
         }
     }
 
-    public uint getVAO() const
-    {
-        return vao;
-    }
-
     public uint getElementCount() const
     {
         return cast( uint )indices.length;
@@ -225,5 +235,5 @@ public class Mesh
     private Face[] indices;
 
     private uint vao;
-    private uint vbo;
+    private uint ubo;
 }

@@ -5,6 +5,8 @@ import std.stdio;
 import std.string;
 import renderer;
 import mesh;
+import shader;
+import vec3;
 
 void main()
 {
@@ -50,11 +52,13 @@ void main()
         
     DerelictGL3.reload();
       
-    Renderer renderer = new Renderer();
+    Renderer.init();
 
     SDL_GL_SetSwapInterval( 1 );
     
     Mesh mesh = new Mesh( "assets/cube.obj" );
+
+    Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
 
     bool quit = false;
 
@@ -77,7 +81,9 @@ void main()
             }
         }
 
-        glClear( GL_COLOR_BUFFER_BIT );
+        Renderer.clearScreen();
+        Renderer.renderMesh( mesh, Vec3( 0, 0, -20 ) );
+
         SDL_GL_SwapWindow( win );
     }
 }

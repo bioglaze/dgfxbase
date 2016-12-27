@@ -1,7 +1,6 @@
-module Matrix4x4;
 import std.math: abs, sin, cos, tan, PI, isNaN;
 import std.string;
-import Vec3;
+import vec3;
 
 void Multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 result )
 {
@@ -134,7 +133,7 @@ struct Matrix4x4
 
     void MakeLookAt( Vec3 eye, Vec3 center, Vec3 up )
     {
-        Vec3.Vec3 zAxis = Vec3.Vec3( center.x - eye.x, center.y - eye.y, center.z - eye.z );
+        Vec3 zAxis = Vec3( center.x - eye.x, center.y - eye.y, center.z - eye.z );
         Normalize( zAxis );
 
         Vec3 xAxis = Cross( up, zAxis );
@@ -142,9 +141,9 @@ struct Matrix4x4
 
         Vec3 yAxis = Cross( zAxis, xAxis );
 
-        m[  0 ] = xAxis.x; m[  1 ] = xAxis.y; m[  2 ] = xAxis.z; m[  3 ] = -Vec3.Dot( xAxis, eye );
-        m[  4 ] = yAxis.x; m[  5 ] = yAxis.y; m[  6 ] = yAxis.z; m[  7 ] = -Vec3.Dot( yAxis, eye );
-        m[  8 ] = zAxis.x; m[  9 ] = zAxis.y; m[ 10 ] = zAxis.z; m[ 11 ] = -Vec3.Dot( zAxis, eye );
+        m[  0 ] = xAxis.x; m[  1 ] = xAxis.y; m[  2 ] = xAxis.z; m[  3 ] = -Dot( xAxis, eye );
+        m[  4 ] = yAxis.x; m[  5 ] = yAxis.y; m[  6 ] = yAxis.z; m[  7 ] = -Dot( yAxis, eye );
+        m[  8 ] = zAxis.x; m[  9 ] = zAxis.y; m[ 10 ] = zAxis.z; m[ 11 ] = -Dot( zAxis, eye );
         m[ 12 ] =       0; m[ 13 ] =       0; m[ 14 ] =       0; m[ 15 ] = 1;
 
         CheckForNaN();
