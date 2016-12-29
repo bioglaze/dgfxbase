@@ -7,3 +7,4 @@ OpenGL 4.5 basecode using D language and Derelict SDL and OpenGL libraries.
   - GL object debug labels
   - Direct State Access
   - Uniform buffers
+  - NDC depth in range 0-1 like in other APIs

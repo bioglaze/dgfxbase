@@ -1,8 +1,10 @@
 import derelict.opengl3.gl3;
+import mesh;
+import shader;
 import std.stdio;
 import std.string;
+import texture;
 import vec3;
-import mesh;
 
 public align(1) struct Vertex
 {
@@ -68,28 +70,27 @@ extern(System) private
         {
         }
 
-        if (severity != undefinedSeverity)
+        if (severity != undefinedSeverity && severity != GL_DEBUG_SEVERITY_LOW_ARB)
         {
             assert( false );
         }
     }
 }
 
-public class Renderer
+struct AllTextures
 {
-    public static void init()
+    GLuint64[ 200 ] textures;
+};
+
+public abstract class Renderer
+{
+    public static void initGL()
     {
-        if (KHR_debug())
-        {
-            glDebugMessageCallback( &loggingCallbackOpenGL, null );
-            glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
-            glEnable( GL_DEBUG_OUTPUT );
-            glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
-        }
-        else
-        {
-            writeln( "Could not enable debug logging." );
-        }
+        glDebugMessageCallback( &loggingCallbackOpenGL, null );
+        glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
+        glEnable( GL_DEBUG_OUTPUT );
+        glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+        glEnable( GL_CULL_FACE );
 
         glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
         glClearColor( 1, 0, 0, 1 );
@@ -100,9 +101,11 @@ public class Renderer
         glClear( GL_COLOR_BUFFER_BIT );
     }
 
-    public static void renderMesh( Mesh mesh, Vec3 position )
+    public static void renderMesh( Mesh mesh, Vec3 position, Texture texture, Shader shader )
     {
-        //glDrawElements( GL_TRIANGLES, mesh.getElementCount(), GL_UNSIGNED_SHORT, cast(GLvoid*)0 );
+        texture.bind( 0 );
+        shader.use();
+        glDrawElements( GL_TRIANGLES, mesh.getElementCount() * 3, GL_UNSIGNED_SHORT, null );
     }
 
     public static void generateVAO( Vertex[] vertices, Face[] faces, string debugName, out uint vao )
@@ -113,21 +116,26 @@ public class Renderer
         uint vbo, ibo;
         glCreateBuffers( 1, &vbo );
         const(char*) str = "vbo";
-        //glObjectLabel( GL_BUFFER, vbo, -1, -1, str );
+        glObjectLabel( GL_BUFFER, vbo, -1, str );
 
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( vbo, vertices.length * Vertex.sizeof, vertices.ptr, flags );
+        glVertexArrayVertexBuffer( vao, 0, vbo, 0, Vertex.sizeof );
+        glVertexArrayVertexBuffer( vao, 1, vbo, 3 * 4, Vertex.sizeof );
 
         glCreateBuffers( 1, &ibo );
         const(char*) str2 = "ibo";
-        //glObjectLabel( GL_BUFFER, ibo, -1, 1, str2 );
+        glObjectLabel( GL_BUFFER, ibo, -1, str2 );
 
         glNamedBufferStorage( ibo, faces.length * Face.sizeof, faces.ptr, flags );
+        glVertexArrayElementBuffer( vao, ibo );
 
-        glVertexAttribFormat( 0, 3, GL_FLOAT, GL_FALSE, 0 );
-        glVertexAttribBinding( 0, 0 );
+        glEnableVertexArrayAttrib( vao, 0 );
+        glVertexArrayAttribFormat( vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+        glVertexArrayAttribBinding( vao, 0, 0 );
 
-        glVertexAttribFormat( 0, 2, GL_FLOAT, GL_FALSE, 3 * 4 );
-        glVertexAttribBinding( 1, 0 );
+        glEnableVertexArrayAttrib( vao, 1 );
+        glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, 0/*3 * 4*/ );
+        glVertexArrayAttribBinding( vao, 1, 0 );
     }
 }

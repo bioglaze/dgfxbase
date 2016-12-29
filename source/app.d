@@ -1,11 +1,13 @@
+import camera;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
 import derelict.opengl3.gl3;
+import mesh;
+import renderer;
+import shader;
 import std.stdio;
 import std.string;
-import renderer;
-import mesh;
-import shader;
+import texture;
 import vec3;
 
 void main()
@@ -23,7 +25,7 @@ void main()
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 4 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 5 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG | SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG );
 
     immutable int screenWidth = 1024;
     immutable int screenHeight = 768;
@@ -52,17 +54,21 @@ void main()
         
     DerelictGL3.reload();
       
-    Renderer.init();
+    Renderer.initGL();
 
     SDL_GL_SetSwapInterval( 1 );
     
     Mesh mesh = new Mesh( "assets/cube.obj" );
-
+    
     Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
+    shader.use();
+    
+    Camera camera = new Camera();
+    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
 
-    bool quit = false;
+    Texture gliderTex = new Texture( "assets/glider.tga" );
 
-    while (!quit)
+    while (true)
     {
         SDL_Event e;
 
@@ -82,7 +88,8 @@ void main()
         }
 
         Renderer.clearScreen();
-        Renderer.renderMesh( mesh, Vec3( 0, 0, -20 ) );
+        mesh.updateUBO( camera.getProjection() );
+        Renderer.renderMesh( mesh, Vec3( 0, 0, -20 ), gliderTex, shader );
 
         SDL_GL_SwapWindow( win );
     }

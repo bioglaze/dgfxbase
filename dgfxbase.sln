@@ -1,31 +1,31 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{7A8C442D-699F-425E-AE6B-B653BD4FA7B3}") = "dgfxbase", ".dub/dgfxbase.visualdproj", "{C3B9A1F4-BEEB-49EC-B8A4-E184BC8C4930}"
+Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "dgfxbase", ".dub/dgfxbase.visualdproj", "{93FCD48D-BF43-4033-BB11-7B942E839043}"
 	ProjectSection(ProjectDependencies) = postProject
-		{78128103-C6AE-4B73-B4BA-75E3F5B311F0} = {78128103-C6AE-4B73-B4BA-75E3F5B311F0}
-		{4F52F127-6F1B-4C6C-83D4-AF2786CBEAA5} = {4F52F127-6F1B-4C6C-83D4-AF2786CBEAA5}
-		{D279C4A0-A0C9-4480-A679-434CDDF85DC6} = {D279C4A0-A0C9-4480-A679-434CDDF85DC6}
+		{65B809EA-9A81-4555-B1ED-B38059C50870} = {65B809EA-9A81-4555-B1ED-B38059C50870}
+		{D4F96072-E232-40D1-9FB3-2F5B4F214F10} = {D4F96072-E232-40D1-9FB3-2F5B4F214F10}
+		{CA3777CC-4D37-4209-8DDA-63E7FB722A53} = {CA3777CC-4D37-4209-8DDA-63E7FB722A53}
 	EndProjectSection
 EndProject
-Project("{7A8C442D-699F-425E-AE6B-B653BD4FA7B3}") = "derelict-gl3", ".dub/derelict-gl3.visualdproj", "{78128103-C6AE-4B73-B4BA-75E3F5B311F0}"
+Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-gl3", ".dub/derelict-gl3.visualdproj", "{65B809EA-9A81-4555-B1ED-B38059C50870}"
 EndProject
-Project("{7A8C442D-699F-425E-AE6B-B653BD4FA7B3}") = "derelict-util", ".dub/derelict-util.visualdproj", "{D279C4A0-A0C9-4480-A679-434CDDF85DC6}"
+Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-util", ".dub/derelict-util.visualdproj", "{CA3777CC-4D37-4209-8DDA-63E7FB722A53}"
 EndProject
-Project("{7A8C442D-699F-425E-AE6B-B653BD4FA7B3}") = "derelict-sdl2", ".dub/derelict-sdl2.visualdproj", "{4F52F127-6F1B-4C6C-83D4-AF2786CBEAA5}"
+Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-sdl2", ".dub/derelict-sdl2.visualdproj", "{D4F96072-E232-40D1-9FB3-2F5B4F214F10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		debug|Win32 = debug|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4F52F127-6F1B-4C6C-83D4-AF2786CBEAA5}.debug|Win32.ActiveCfg = debug|Win32
-		{4F52F127-6F1B-4C6C-83D4-AF2786CBEAA5}.debug|Win32.Build.0 = debug|Win32
-		{D279C4A0-A0C9-4480-A679-434CDDF85DC6}.debug|Win32.ActiveCfg = debug|Win32
-		{D279C4A0-A0C9-4480-A679-434CDDF85DC6}.debug|Win32.Build.0 = debug|Win32
-		{C3B9A1F4-BEEB-49EC-B8A4-E184BC8C4930}.debug|Win32.ActiveCfg = debug|Win32
-		{C3B9A1F4-BEEB-49EC-B8A4-E184BC8C4930}.debug|Win32.Build.0 = debug|Win32
-		{78128103-C6AE-4B73-B4BA-75E3F5B311F0}.debug|Win32.ActiveCfg = debug|Win32
-		{78128103-C6AE-4B73-B4BA-75E3F5B311F0}.debug|Win32.Build.0 = debug|Win32
+		{D4F96072-E232-40D1-9FB3-2F5B4F214F10}.debug|Win32.ActiveCfg = debug|Win32
+		{D4F96072-E232-40D1-9FB3-2F5B4F214F10}.debug|Win32.Build.0 = debug|Win32
+		{CA3777CC-4D37-4209-8DDA-63E7FB722A53}.debug|Win32.ActiveCfg = debug|Win32
+		{CA3777CC-4D37-4209-8DDA-63E7FB722A53}.debug|Win32.Build.0 = debug|Win32
+		{93FCD48D-BF43-4033-BB11-7B942E839043}.debug|Win32.ActiveCfg = debug|Win32
+		{93FCD48D-BF43-4033-BB11-7B942E839043}.debug|Win32.Build.0 = debug|Win32
+		{65B809EA-9A81-4555-B1ED-B38059C50870}.debug|Win32.ActiveCfg = debug|Win32
+		{65B809EA-9A81-4555-B1ED-B38059C50870}.debug|Win32.Build.0 = debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,8 +1,8 @@
+import derelict.opengl3.gl3;
 import std.exception;
 import std.file;
 import std.stdio;
 import std.string;
-import derelict.opengl3.gl3;
 
 class Shader
 {
@@ -94,10 +94,10 @@ class Shader
     private void link()
     {
         glLinkProgram( program );
-        printInfoLog( program, GL_LINK_STATUS );
+        printInfoLog( program, GL_LINK_STATUS, GL_LINK_STATUS );
     }
 
-    private void printInfoLog( GLuint shader, GLenum status )
+    private void printInfoLog( GLuint shader, GLenum status, GLenum getProgramParam )
     {
         assert( status == GL_LINK_STATUS || status == GL_COMPILE_STATUS, "Wrong status!" );
 
@@ -109,7 +109,7 @@ class Shader
         }
         else
         {
-            glGetProgramiv( shader, GL_LINK_STATUS, &shaderCompiled );
+            glGetProgramiv( shader, getProgramParam, &shaderCompiled );
         }
 
         if (shaderCompiled != GL_TRUE)
@@ -141,7 +141,7 @@ class Shader
         glShaderSource( shader, 1, &sourceCstr, null );
 
         glCompileShader( shader );
-        printInfoLog( shader, GL_COMPILE_STATUS );
+        printInfoLog( shader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, shader );
     }
 
@@ -153,6 +153,12 @@ class Shader
         printInfoLog( shader, GL_COMPILE_STATUS );
         glAttachShader( program, shader );
     }*/
+
+    public void validate()
+    {
+        glValidateProgram( program );
+        printInfoLog( program, GL_LINK_STATUS, GL_VALIDATE_STATUS );
+    }
 
     private GLuint program;
 }

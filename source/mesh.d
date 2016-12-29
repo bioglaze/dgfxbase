@@ -1,11 +1,12 @@
-import std.format;
-import std.string;
-import std.stdio;
-import std.math;
+import core.stdc.string;
 import derelict.opengl3.gl3;
-import vec3;
-import renderer;
 import matrix4x4;
+import renderer;
+import std.format;
+import std.math;
+import std.stdio;
+import std.string;
+import vec3;
 
 private struct ObjFace
 {
@@ -14,7 +15,7 @@ private struct ObjFace
     ushort n1, n2, n3;
 }
 
-public struct PerObjectUBO
+public align(1) struct PerObjectUBO
 {
     Matrix4x4 mvp;
 }
@@ -31,13 +32,27 @@ public class Mesh
         loadObj( path, vertices, normals, texcoords, faces );
         interleave( vertices, normals, texcoords, faces );
         Renderer.generateVAO( interleavedVertices, indices, path, vao );
+        
+        glCreateBuffers( 1, &ubo );
+        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
     }
 
-    public void updateUBO()
+    public void updateUBO( Matrix4x4 projection )
     {
-		GLvoid* p = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
-		//memcpy( p, &ubo, PerObjectUBO.sizeof );
-        glUnmapBuffer( GL_UNIFORM_BUFFER );
+        Matrix4x4 mvp;
+        //mvp.scale( 1, 1, 1 );
+        ++testRotation;
+        mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
+        mvp.translate( Vec3( 0, 0, -20 ) );
+        multiply( mvp, projection, mvp );
+        uboStruct.mvp = mvp;
+
+		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
+        glUnmapNamedBuffer( ubo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
     }
 
     // Tested only with models exported from Blender. File must contain one mesh only,
@@ -236,4 +251,6 @@ public class Mesh
 
     private uint vao;
     private uint ubo;
+    private PerObjectUBO uboStruct;
+    float testRotation = 0;
 }

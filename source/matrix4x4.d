@@ -1,8 +1,8 @@
-import std.math: abs, sin, cos, tan, PI, isNaN;
+import std.math: abs, cos, isNaN, PI, sin, tan;
 import std.string;
 import vec3;
 
-void Multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 result )
+void multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 result )
 {
     Matrix4x4 tmp;
 
@@ -19,10 +19,10 @@ void Multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 result )
 
     result = tmp;
 
-    result.CheckForNaN();
+    result.checkForNaN();
 }
 
-void TransformPoint( Vec3 vec, Matrix4x4 mat, out Vec3 vOut )
+void transformPoint( Vec3 vec, Matrix4x4 mat, out Vec3 vOut )
 {
     vOut.x = mat.m[0] * vec.x + mat.m[ 4 ] * vec.y + mat.m[ 8] * vec.z + mat.m[12];
     vOut.y = mat.m[1] * vec.x + mat.m[ 5 ] * vec.y + mat.m[ 9] * vec.z + mat.m[13];
@@ -39,7 +39,7 @@ struct Matrix4x4
             
     }
 
-    void CheckForNaN() const
+    void checkForNaN() const
     {
         for (int i = 0; i < 16; ++i)
         {
@@ -47,7 +47,7 @@ struct Matrix4x4
         }
     }
 
-    void MakeIdentity()
+    void makeIdentity()
     {
         m[] = 0;
         m[  0 ] = 1;
@@ -55,10 +55,10 @@ struct Matrix4x4
         m[ 10 ] = 1;
         m[ 15 ] = 1;
 
-        CheckForNaN();
+        checkForNaN();
     }
 
-    void MakeRotationXYZ( float xDeg, float yDeg, float zDeg )
+    void makeRotationXYZ( float xDeg, float yDeg, float zDeg )
     {
         const float deg2rad = PI / 180.0f;
         const float sx = sin( xDeg * deg2rad );
@@ -85,10 +85,10 @@ struct Matrix4x4
         m[14 ] = 0;
         m[15 ] = 1;
 
-        CheckForNaN();   
+        checkForNaN();   
     }
 
-    void MakeProjection( float left, float right, float bottom, float top, float nearDepth, float farDepth )
+    void makeProjection( float left, float right, float bottom, float top, float nearDepth, float farDepth )
     {
         const float tx = -((right + left) / (right - left));
         const float ty = -((top + bottom) / (top - bottom));
@@ -102,10 +102,10 @@ struct Matrix4x4
             tx, ty, tz, 1.0f
         ];
 
-        CheckForNaN();
+        checkForNaN();
     }
 	
-    void MakeProjection( float fovDegrees, float aspect, float nearDepth, float farDepth )
+    void makeProjection( float fovDegrees, float aspect, float nearDepth, float farDepth )
     {
         const float top = tan( fovDegrees * PI / 360.0f ) * nearDepth;
         const float bottom = -top;
@@ -128,43 +128,43 @@ struct Matrix4x4
             0, 0, d,  0
         ];
 
-        CheckForNaN();
+        checkForNaN();
     }
 
-    void MakeLookAt( Vec3 eye, Vec3 center, Vec3 up )
+    void makeLookAt( Vec3 eye, Vec3 center, Vec3 up )
     {
         Vec3 zAxis = Vec3( center.x - eye.x, center.y - eye.y, center.z - eye.z );
-        Normalize( zAxis );
+        normalize( zAxis );
 
-        Vec3 xAxis = Cross( up, zAxis );
-        Normalize( xAxis );
+        Vec3 xAxis = cross( up, zAxis );
+        normalize( xAxis );
 
-        Vec3 yAxis = Cross( zAxis, xAxis );
+        Vec3 yAxis = cross( zAxis, xAxis );
 
-        m[  0 ] = xAxis.x; m[  1 ] = xAxis.y; m[  2 ] = xAxis.z; m[  3 ] = -Dot( xAxis, eye );
-        m[  4 ] = yAxis.x; m[  5 ] = yAxis.y; m[  6 ] = yAxis.z; m[  7 ] = -Dot( yAxis, eye );
-        m[  8 ] = zAxis.x; m[  9 ] = zAxis.y; m[ 10 ] = zAxis.z; m[ 11 ] = -Dot( zAxis, eye );
+        m[  0 ] = xAxis.x; m[  1 ] = xAxis.y; m[  2 ] = xAxis.z; m[  3 ] = -dot( xAxis, eye );
+        m[  4 ] = yAxis.x; m[  5 ] = yAxis.y; m[  6 ] = yAxis.z; m[  7 ] = -dot( yAxis, eye );
+        m[  8 ] = zAxis.x; m[  9 ] = zAxis.y; m[ 10 ] = zAxis.z; m[ 11 ] = -dot( zAxis, eye );
         m[ 12 ] =       0; m[ 13 ] =       0; m[ 14 ] =       0; m[ 15 ] = 1;
 
-        CheckForNaN();
+        checkForNaN();
     }
 
-    void Scale( float x, float y, float z )
+    void scale( float x, float y, float z )
     {
         Matrix4x4 scale;
-        scale.MakeIdentity();
+        scale.makeIdentity();
         
         scale.m[  0 ] = x;
         scale.m[  5 ] = y;
         scale.m[ 10 ] = z;
 
-        Multiply( this, scale, this );
+        multiply( this, scale, this );
     }
     
-    void Translate( Vec3 v )
+    void translate( Vec3 v )
     {
         Matrix4x4 translateMatrix;
-        translateMatrix.MakeIdentity();
+        translateMatrix.makeIdentity();
 
         translateMatrix.m[ 12 ] = v.x;
         translateMatrix.m[ 13 ] = v.y;
@@ -173,13 +173,13 @@ struct Matrix4x4
         Matrix4x4 th;
         th.m = m;
         Matrix4x4 res;
-        Multiply( th, translateMatrix, res );
+        multiply( th, translateMatrix, res );
         m = res.m;
 
-        CheckForNaN();
+        checkForNaN();
     }
 
-    void Transpose()
+    void transpose()
     {
         float[ 16 ] tmp;
         
@@ -202,7 +202,7 @@ struct Matrix4x4
 
         m = tmp;
 
-        CheckForNaN();
+        checkForNaN();
     }
 
     float[ 16 ] m;
@@ -211,7 +211,7 @@ struct Matrix4x4
 unittest
 {
 	auto proj = new Matrix4x4();
-	proj.MakeProjection( 0, 640, 0, 480, -1, 1 );
+	proj.makeProjection( 0, 640, 0, 480, -1, 1 );
 	assert( proj.m[ 15 ] == 1 );
 }
 
@@ -224,7 +224,7 @@ unittest
     matrix2.m = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ];
     
     Matrix4x4 result;
-    Multiply( matrix1, matrix2, result );
+    multiply( matrix1, matrix2, result );
     
     Matrix4x4 expectedResult;
     expectedResult.m = 
@@ -244,10 +244,10 @@ unittest
 unittest
 {
     Matrix4x4 matrix;
-    matrix.MakeIdentity();
+    matrix.makeIdentity();
     const float exceptedResult = 42;
     matrix.m[ 3 ] = exceptedResult;
-    matrix.Transpose();
+    matrix.transpose();
     
     assert( matrix.m[ 3 * 4 ] == exceptedResult, "Matrix4x4 Transpose failed!" );
 }
