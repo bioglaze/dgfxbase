@@ -77,11 +77,6 @@ extern(System) private
     }
 }
 
-struct AllTextures
-{
-    GLuint64[ 200 ] textures;
-};
-
 public abstract class Renderer
 {
     public static void initGL()
@@ -115,8 +110,7 @@ public abstract class Renderer
 
         uint vbo, ibo;
         glCreateBuffers( 1, &vbo );
-        const(char*) str = "vbo";
-        glObjectLabel( GL_BUFFER, vbo, -1, str );
+        glObjectLabel( GL_BUFFER, vbo, -1, toStringz( "vbo" ) );
 
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( vbo, vertices.length * Vertex.sizeof, vertices.ptr, flags );
@@ -124,8 +118,7 @@ public abstract class Renderer
         glVertexArrayVertexBuffer( vao, 1, vbo, 3 * 4, Vertex.sizeof );
 
         glCreateBuffers( 1, &ibo );
-        const(char*) str2 = "ibo";
-        glObjectLabel( GL_BUFFER, ibo, -1, str2 );
+        glObjectLabel( GL_BUFFER, ibo, -1, toStringz( "ibo" ) );
 
         glNamedBufferStorage( ibo, faces.length * Face.sizeof, faces.ptr, flags );
         glVertexArrayElementBuffer( vao, ibo );
@@ -135,7 +128,7 @@ public abstract class Renderer
         glVertexArrayAttribBinding( vao, 0, 0 );
 
         glEnableVertexArrayAttrib( vao, 1 );
-        glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, 0/*3 * 4*/ );
+        glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, 0 );
         glVertexArrayAttribBinding( vao, 1, 0 );
     }
 }

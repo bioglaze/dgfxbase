@@ -60,7 +60,7 @@ void main()
     
     Mesh mesh = new Mesh( "assets/cube.obj" );
     
-    Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
+    Shader shader = new Shader( "assets/shader.vert.spv", "assets/shader.frag.spv" );
     shader.use();
     
     Camera camera = new Camera();

@@ -59,7 +59,7 @@ public class Texture
         readTGA( path, width, height, pixelData );
         
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
-        glBindTexture( GL_TEXTURE_2D, handle );
+        glBindTextureUnit( 0, handle );
 
         glTextureStorage2D( handle, 1, GL_RGBA8, width, height );
         glTextureSubImage2D( handle, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixelData.ptr );
@@ -67,6 +67,7 @@ public class Texture
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT );
     }
 
     public void bind( int unit )

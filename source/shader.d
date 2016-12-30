@@ -4,16 +4,53 @@ import std.file;
 import std.stdio;
 import std.string;
 
+extern(System) @nogc nothrow
+{
+    alias da_glSpecializeShader = void function( GLuint, const(char)*, GLuint, const(uint)*, const(uint)* );
+}
+
+__gshared
+{
+    da_glSpecializeShader glSpecializeShader;
+}
+
+import derelict.opengl3.wgl;
+import derelict.opengl3.internal;
+
+void* loadGLFunc( string symName )
+{
+    version( Windows )
+    {
+        return cast( void* )wglGetProcAddress( symName.toStringz() );
+    }
+}
+
+void bindGLFunc( void** ptr, string symName )
+{
+    import derelict.util.exception : SymbolLoadException;
+
+    auto sym = loadGLFunc( symName );
+    if( !sym )
+        throw new SymbolLoadException( "Failed to load OpenGL symbol [" ~ symName ~ "]" );
+    *ptr = sym;
+}
+
 class Shader
 {
     this( string vertexPath, string fragmentPath )
     {
         try
         {
+            bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
+
             program = glCreateProgram();
-            compile( cast(string)read( vertexPath ), GL_VERTEX_SHADER );
-            compile( cast(string)read( fragmentPath ), GL_FRAGMENT_SHADER );
+            glObjectLabel( GL_PROGRAM, program, -1, toStringz( vertexPath ) );
+
+            //compile( cast(string)read( vertexPath ), GL_VERTEX_SHADER );
+            //compile( cast(string)read( fragmentPath ), GL_FRAGMENT_SHADER );
+            compileSpirV( vertexPath, fragmentPath );
             link();
+
         }
         catch (Exception e)
         {
@@ -94,10 +131,10 @@ class Shader
     private void link()
     {
         glLinkProgram( program );
-        printInfoLog( program, GL_LINK_STATUS, GL_LINK_STATUS );
+        printInfoLog( program, program, GL_LINK_STATUS, GL_LINK_STATUS );
     }
 
-    private void printInfoLog( GLuint shader, GLenum status, GLenum getProgramParam )
+    public static void printInfoLog( GLuint program, GLuint shader, GLenum status, GLenum getProgramParam )
     {
         assert( status == GL_LINK_STATUS || status == GL_COMPILE_STATUS, "Wrong status!" );
 
@@ -109,7 +146,7 @@ class Shader
         }
         else
         {
-            glGetProgramiv( shader, getProgramParam, &shaderCompiled );
+            glGetProgramiv( program, getProgramParam, &shaderCompiled );
         }
 
         if (shaderCompiled != GL_TRUE)
@@ -141,23 +178,38 @@ class Shader
         glShaderSource( shader, 1, &sourceCstr, null );
 
         glCompileShader( shader );
-        printInfoLog( shader, GL_COMPILE_STATUS, GL_LINK_STATUS );
+        printInfoLog( program, shader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, shader );
     }
 
-    /*private void compileSpirV( string path, GLenum shaderType )
+    private void compileSpirV( string vertexPath, string fragmentPath )
     {
-        GLuint shader = glCreateShader( shaderType );
-        glShaderBinary( 1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, bin, size );
-        glSpecializeShaderARB( shader, "main", 0, null, null );
-        printInfoLog( shader, GL_COMPILE_STATUS );
-        glAttachShader( program, shader );
-    }*/
+        if (!exists( vertexPath ) || !exists( fragmentPath ))
+        {
+            writeln( "could not open ", vertexPath, " or ", fragmentPath );
+            return;
+        }
+
+        auto vertexData = cast(byte[]) read( vertexPath );
+        GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
+        GLenum GL_SHADER_BINARY_FORMAT_SPIR_V_ARB = 0x9551;
+        glShaderBinary( 1, &vertexShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)vertexData, vertexData.length );
+        glSpecializeShader( vertexShader, "main", 0, null, null );
+        printInfoLog( program, vertexShader, GL_COMPILE_STATUS, GL_LINK_STATUS );
+        glAttachShader( program, vertexShader );
+
+        auto fragmentData = cast(byte[]) read( fragmentPath );
+        GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
+        glShaderBinary( 1, &fragmentShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fragmentData, fragmentData.length );
+        glSpecializeShader( fragmentShader, "main", 0, null, null );
+        printInfoLog( program, fragmentShader, GL_COMPILE_STATUS, GL_LINK_STATUS );
+        glAttachShader( program, fragmentShader );
+    }
 
     public void validate()
     {
         glValidateProgram( program );
-        printInfoLog( program, GL_LINK_STATUS, GL_VALIDATE_STATUS );
+        printInfoLog( program, program, GL_LINK_STATUS, GL_VALIDATE_STATUS );
     }
 
     private GLuint program;
