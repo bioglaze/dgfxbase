@@ -7,17 +7,17 @@ import std.string;
 
 class ComputeShader
 {
-    this( string vertexPath, string fragmentPath )
+    this( string spirvPath )
     {
         try
         {
             program = glCreateProgram();
-            compile( cast(string)read( vertexPath ) );
+            compile( cast(string)read( spirvPath ) );
             link();
         }
         catch (Exception e)
         {
-            writeln( "Could not open or compile " ~ vertexPath ~ " or " ~ fragmentPath );
+            writeln( "Could not open or compile " ~ spirvPath );
         }
     }
 
@@ -48,14 +48,22 @@ class ComputeShader
         glAttachShader( program, shader );
     }
 
-    /*private void compileSpirV( string path, GLenum shaderType )
+    private void compileSpirV( string path )
     {
-        GLuint shader = glCreateShader( shaderType );
-        glShaderBinary( 1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, bin, size );
-        glSpecializeShaderARB( shader, "main", 0, null, null );
-        printInfoLog( shader, GL_COMPILE_STATUS );
+        if (!exists( path ))
+        {
+            writeln( "could not open ", path );
+            return;
+        }
+
+        auto fileData = cast(byte[]) read( path );
+        GLuint shader = glCreateShader( GL_COMPUTE_SHADER );
+        GLenum GL_SHADER_BINARY_FORMAT_SPIR_V_ARB = 0x9551;
+        glShaderBinary( 1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fileData, fileData.length );
+        glSpecializeShader( shader, "main", 0, null, null );
+        Shader.printInfoLog( program, shader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, shader );
-    }*/
+    }
 
     private GLuint program;
     private GLuint shader;
