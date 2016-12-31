@@ -1,6 +1,6 @@
 #version 450 core
 
-uniform sampler2D sTexture;
+layout(binding=0) uniform sampler2D sTexture;
 
 in vec2 vUV;
 out vec4 fragColor;

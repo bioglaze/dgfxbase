@@ -46,9 +46,16 @@ class Shader
             program = glCreateProgram();
             glObjectLabel( GL_PROGRAM, program, -1, toStringz( vertexPath ) );
 
-            //compile( cast(string)read( vertexPath ), GL_VERTEX_SHADER );
-            //compile( cast(string)read( fragmentPath ), GL_FRAGMENT_SHADER );
-            compileSpirV( vertexPath, fragmentPath );
+			if (indexOf( vertexPath, ".spv" ) != -1)
+			{
+				compileSpirV( vertexPath, fragmentPath );
+			}
+			else
+			{
+				compile( cast(string)read( vertexPath ), GL_VERTEX_SHADER );
+				compile( cast(string)read( fragmentPath ), GL_FRAGMENT_SHADER );
+			}
+
             link();
 
         }

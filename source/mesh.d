@@ -20,117 +20,9 @@ public align(1) struct PerObjectUBO
     Matrix4x4 mvp;
 }
 
-public class Mesh
+private class SubMesh
 {
-    this( string path )
-    {
-        Vec3[] vertices;
-        Vec3[] normals;
-        Vec3[] texcoords;
-        ObjFace[] faces;
-
-        loadObj( path, vertices, normals, texcoords, faces );
-        interleave( vertices, normals, texcoords, faces );
-        Renderer.generateVAO( interleavedVertices, indices, path, vao );
-        
-        glCreateBuffers( 1, &ubo );
-        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
-    }
-
-    public void updateUBO( Matrix4x4 projection )
-    {
-        Matrix4x4 mvp;
-        //mvp.scale( 1, 1, 1 );
-        ++testRotation;
-        mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
-        mvp.translate( Vec3( 0, 0, -20 ) );
-        multiply( mvp, projection, mvp );
-        uboStruct.mvp = mvp;
-
-		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
-		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
-        glUnmapNamedBuffer( ubo );
-
-        glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
-    }
-
-    // Tested only with models exported from Blender. File must contain one mesh only,
-    // exported with triangulation, texcoords and normals.
-    private void loadObj( string path, ref Vec3[] vertices, ref Vec3[] normals, ref Vec3[] texcoords, ref ObjFace[] faces )
-    {
-        auto file = File( path, "r" );
-
-        if (!file.isOpen())
-        {
-            writeln( "Could not open ", path );
-            return;
-        }
-
-        while (!file.eof())
-        {
-            string line = strip( file.readln() );
-
-            if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
-            {
-                Vec3 vertex;
-                string v;
-                uint items = formattedRead( line, "%s %f %f %f", &v, &vertex.x, &vertex.y, &vertex.z );
-                assert( items == 4, "parse error reading .obj file" );
-                vertices ~= vertex;
-            }
-            else if (line.length > 0 && line[ 0..2 ] == "vn")
-            {
-                Vec3 normal;
-                string v;
-                uint items = formattedRead( line, "%s %f %f %f", &v, &normal.x, &normal.y, &normal.z );
-                assert( items == 4, "parse error reading .obj file" );
-                normals ~= normal;
-            }
-            else if (line.length > 0 && line[ 0..2 ] == "vt")
-            {
-                Vec3 texcoord;
-                string v;
-                uint items = formattedRead( line, "%s %f %f", &v, &texcoord.x, &texcoord.y );
-                assert( items == 3, "parse error reading .obj file" );
-                texcoords ~= texcoord;
-            }
-        }
-
-        file.seek( 0 );
-
-        while (!file.eof())
-        {
-            string line = strip( file.readln() );
-
-            if (line.length > 0 && line[ 0 ] == 'f')
-            {
-                ObjFace face;
-                string v;
-                uint items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
-                                            &face.v2, &face.t2, &face.n2,
-                                            &face.v3, &face.t3, &face.n3 );
-                assert( items == 10, "parse error reading .obj file" );
-
-                // OBJ faces are 1-indexed, convert to 0-indexed.
-                --face.v1;
-                --face.v2;
-                --face.v3;
-
-                --face.n1;
-                --face.n2;
-                --face.n3;
-
-                --face.t1;
-                --face.t2;
-                --face.t3;
-
-                faces ~= face;
-            }
-        }
-    }
-
-    private bool almostEquals( float[ 3 ] v1, Vec3 v2 ) const
+	private bool almostEquals( float[ 3 ] v1, Vec3 v2 ) const
     {
         if (abs( v1[ 0 ] - v2.x ) > 0.0001f) { return false; }
         if (abs( v1[ 1 ] - v2.y ) > 0.0001f) { return false; }
@@ -145,7 +37,7 @@ public class Mesh
         return true;
     }
 
-    private void interleave( ref Vec3[] vertices, ref Vec3[] normals, ref Vec3[] texcoords, ObjFace[] faces )
+	private void interleave( ref Vec3[] vertices, ref Vec3[] normals, ref Vec3[] texcoords, ObjFace[] faces )
     {
         Face face;
 
@@ -241,16 +133,143 @@ public class Mesh
         }
     }
 
-    public uint getElementCount() const
+	public Vertex[] interleavedVertices;
+    public Face[] indices;
+}
+
+public class Mesh
+{
+    this( string path )
     {
-        return cast( uint )indices.length;
+        loadObj( path );
+        
+        glCreateBuffers( 1, &ubo );
+        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
     }
 
-    private Vertex[] interleavedVertices;
-    private Face[] indices;
+	public int getSubMeshCount() const
+	{
+		return subMeshes.length;
+	}
 
-    private uint vao;
+	public void bind( int subMeshIndex )
+	{
+		glBindVertexArray( vaos[ subMeshIndex ] );
+	}
+
+    public void updateUBO( Matrix4x4 projection )
+    {
+        Matrix4x4 mvp;
+        //mvp.scale( 1, 1, 1 );
+        ++testRotation;
+        mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
+        mvp.translate( Vec3( 0, 0, -20 ) );
+        multiply( mvp, projection, mvp );
+        uboStruct.mvp = mvp;
+
+		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
+        glUnmapNamedBuffer( ubo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
+    }
+
+    // Tested only with models exported from Blender. File must contain one mesh only,
+    // exported with triangulation, texcoords and normals.
+    private void loadObj( string path )
+    {
+		subMeshes = new SubMesh[ 1 ];
+		subMeshes[ 0 ] = new SubMesh();
+		vaos = new uint[ subMeshes.length ];
+
+		Vec3[] vertices;
+        Vec3[] normals;
+        Vec3[] texcoords;
+        ObjFace[] faces;
+
+        auto file = File( path, "r" );
+
+        if (!file.isOpen())
+        {
+            writeln( "Could not open ", path );
+            return;
+        }
+
+        while (!file.eof())
+        {
+            string line = strip( file.readln() );
+
+            if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
+            {
+                Vec3 vertex;
+                string v;
+                uint items = formattedRead( line, "%s %f %f %f", &v, &vertex.x, &vertex.y, &vertex.z );
+                assert( items == 4, "parse error reading .obj file" );
+                vertices ~= vertex;
+            }
+            else if (line.length > 0 && line[ 0..2 ] == "vn")
+            {
+                Vec3 normal;
+                string v;
+                uint items = formattedRead( line, "%s %f %f %f", &v, &normal.x, &normal.y, &normal.z );
+                assert( items == 4, "parse error reading .obj file" );
+                normals ~= normal;
+            }
+            else if (line.length > 0 && line[ 0..2 ] == "vt")
+            {
+                Vec3 texcoord;
+                string v;
+                uint items = formattedRead( line, "%s %f %f", &v, &texcoord.x, &texcoord.y );
+                assert( items == 3, "parse error reading .obj file" );
+                texcoords ~= texcoord;
+            }
+        }
+
+        file.seek( 0 );
+
+        while (!file.eof())
+        {
+            string line = strip( file.readln() );
+
+            if (line.length > 0 && line[ 0 ] == 'f')
+            {
+                ObjFace face;
+                string v;
+                uint items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
+                                            &face.v2, &face.t2, &face.n2,
+                                            &face.v3, &face.t3, &face.n3 );
+                assert( items == 10, "parse error reading .obj file" );
+
+                // OBJ faces are 1-indexed, convert to 0-indexed.
+                --face.v1;
+                --face.v2;
+                --face.v3;
+
+                --face.n1;
+                --face.n2;
+                --face.n3;
+
+                --face.t1;
+                --face.t2;
+                --face.t3;
+
+                faces ~= face;
+            }
+        }
+
+		subMeshes[ 0 ].interleave( vertices, normals, texcoords, faces );
+        Renderer.generateVAO( subMeshes[ 0 ].interleavedVertices, subMeshes[ 0 ].indices, path, vaos[ 0 ] );
+    }
+
+    public uint getElementCount( int subMeshIndex ) const
+    {
+        return cast( uint )subMeshes[ subMeshIndex ].indices.length;
+    }
+
+    private uint[] vaos;
     private uint ubo;
     private PerObjectUBO uboStruct;
     float testRotation = 0;
+	SubMesh[] subMeshes;
 }

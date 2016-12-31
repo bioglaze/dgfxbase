@@ -35,7 +35,7 @@ void main()
 
     ShouldThrow missingSymFunc( string symName )
     {
-        if (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d")
+        if (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d" || symName == "glEnableClientStateiEXT")
         {
             return ShouldThrow.No;
         }
@@ -51,14 +51,16 @@ void main()
     {
         throw new Error( "Failed to create GL context!" );
     }
-        
+
     DerelictGL3.reload();
       
     Renderer.initGL();
 
     SDL_GL_SetSwapInterval( 1 );
     
-    Mesh mesh = new Mesh( "assets/cube.obj" );
+    Mesh cube = new Mesh( "assets/cube.obj" );
+	//Mesh twoMeshes = new Mesh( "assets/pnt_tris_2_meshes.obj" );
+    //Mesh sponza = new Mesh( "assets/sponza.obj" );
     
     Shader shader = new Shader( "assets/shader.vert.spv", "assets/shader.frag.spv" );
     shader.use();
@@ -88,8 +90,11 @@ void main()
         }
 
         Renderer.clearScreen();
-        mesh.updateUBO( camera.getProjection() );
-        Renderer.renderMesh( mesh, Vec3( 0, 0, -20 ), gliderTex, shader );
+        cube.updateUBO( camera.getProjection() );
+        Renderer.renderMesh( cube, Vec3( 0, 0, -20 ), gliderTex, shader );
+
+		//twoMeshes.updateUBO( camera.getProjection() );
+        //Renderer.renderMesh( twoMeshes, Vec3( 0, 0, -20 ), gliderTex, shader );
 
         SDL_GL_SwapWindow( win );
     }

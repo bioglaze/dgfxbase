@@ -1,31 +1,31 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "dgfxbase", ".dub/dgfxbase.visualdproj", "{93FCD48D-BF43-4033-BB11-7B942E839043}"
+Project("{23370324-79B6-4E61-B69F-723B263B66B7}") = "dgfxbase", ".dub/dgfxbase.visualdproj", "{FAF9100C-E544-4468-9C40-5EFC3D293C1A}"
 	ProjectSection(ProjectDependencies) = postProject
-		{65B809EA-9A81-4555-B1ED-B38059C50870} = {65B809EA-9A81-4555-B1ED-B38059C50870}
-		{D4F96072-E232-40D1-9FB3-2F5B4F214F10} = {D4F96072-E232-40D1-9FB3-2F5B4F214F10}
-		{CA3777CC-4D37-4209-8DDA-63E7FB722A53} = {CA3777CC-4D37-4209-8DDA-63E7FB722A53}
+		{71AE3546-CED0-4879-BC7A-130147521AEF} = {71AE3546-CED0-4879-BC7A-130147521AEF}
+		{D4DD6CE1-FED6-46D8-BEAB-A2CABDCBA52E} = {D4DD6CE1-FED6-46D8-BEAB-A2CABDCBA52E}
+		{6B1A1769-BBE0-41EC-9EE0-D9BDC6DCAAD7} = {6B1A1769-BBE0-41EC-9EE0-D9BDC6DCAAD7}
 	EndProjectSection
 EndProject
-Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-gl3", ".dub/derelict-gl3.visualdproj", "{65B809EA-9A81-4555-B1ED-B38059C50870}"
+Project("{23370324-79B6-4E61-B69F-723B263B66B7}") = "derelict-gl3", ".dub/derelict-gl3.visualdproj", "{71AE3546-CED0-4879-BC7A-130147521AEF}"
 EndProject
-Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-util", ".dub/derelict-util.visualdproj", "{CA3777CC-4D37-4209-8DDA-63E7FB722A53}"
+Project("{23370324-79B6-4E61-B69F-723B263B66B7}") = "derelict-util", ".dub/derelict-util.visualdproj", "{6B1A1769-BBE0-41EC-9EE0-D9BDC6DCAAD7}"
 EndProject
-Project("{91742D3A-63AF-4817-BE4C-C80EDB9397F9}") = "derelict-sdl2", ".dub/derelict-sdl2.visualdproj", "{D4F96072-E232-40D1-9FB3-2F5B4F214F10}"
+Project("{23370324-79B6-4E61-B69F-723B263B66B7}") = "derelict-sdl2", ".dub/derelict-sdl2.visualdproj", "{D4DD6CE1-FED6-46D8-BEAB-A2CABDCBA52E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		debug|Win32 = debug|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D4F96072-E232-40D1-9FB3-2F5B4F214F10}.debug|Win32.ActiveCfg = debug|Win32
-		{D4F96072-E232-40D1-9FB3-2F5B4F214F10}.debug|Win32.Build.0 = debug|Win32
-		{CA3777CC-4D37-4209-8DDA-63E7FB722A53}.debug|Win32.ActiveCfg = debug|Win32
-		{CA3777CC-4D37-4209-8DDA-63E7FB722A53}.debug|Win32.Build.0 = debug|Win32
-		{93FCD48D-BF43-4033-BB11-7B942E839043}.debug|Win32.ActiveCfg = debug|Win32
-		{93FCD48D-BF43-4033-BB11-7B942E839043}.debug|Win32.Build.0 = debug|Win32
-		{65B809EA-9A81-4555-B1ED-B38059C50870}.debug|Win32.ActiveCfg = debug|Win32
-		{65B809EA-9A81-4555-B1ED-B38059C50870}.debug|Win32.Build.0 = debug|Win32
+		{D4DD6CE1-FED6-46D8-BEAB-A2CABDCBA52E}.debug|Win32.ActiveCfg = debug|Win32
+		{D4DD6CE1-FED6-46D8-BEAB-A2CABDCBA52E}.debug|Win32.Build.0 = debug|Win32
+		{6B1A1769-BBE0-41EC-9EE0-D9BDC6DCAAD7}.debug|Win32.ActiveCfg = debug|Win32
+		{6B1A1769-BBE0-41EC-9EE0-D9BDC6DCAAD7}.debug|Win32.Build.0 = debug|Win32
+		{FAF9100C-E544-4468-9C40-5EFC3D293C1A}.debug|Win32.ActiveCfg = debug|Win32
+		{FAF9100C-E544-4468-9C40-5EFC3D293C1A}.debug|Win32.Build.0 = debug|Win32
+		{71AE3546-CED0-4879-BC7A-130147521AEF}.debug|Win32.ActiveCfg = debug|Win32
+		{71AE3546-CED0-4879-BC7A-130147521AEF}.debug|Win32.Build.0 = debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

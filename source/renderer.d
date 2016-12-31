@@ -86,6 +86,8 @@ public abstract class Renderer
         glEnable( GL_DEBUG_OUTPUT );
         glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
         glEnable( GL_CULL_FACE );
+        glEnable( GL_DEPTH_TEST );
+		glDepthFunc( GL_LESS );
 
         glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
         glClearColor( 1, 0, 0, 1 );
@@ -93,14 +95,18 @@ public abstract class Renderer
 
     public static void clearScreen()
     {
-        glClear( GL_COLOR_BUFFER_BIT );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     }
 
     public static void renderMesh( Mesh mesh, Vec3 position, Texture texture, Shader shader )
     {
-        texture.bind( 0 );
-        shader.use();
-        glDrawElements( GL_TRIANGLES, mesh.getElementCount() * 3, GL_UNSIGNED_SHORT, null );
+		for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
+		{
+			mesh.bind( subMeshIndex );
+			texture.bind( 0 );
+			shader.use();
+			glDrawElements( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_SHORT, null );
+		}
     }
 
     public static void generateVAO( Vertex[] vertices, Face[] faces, string debugName, out uint vao )
@@ -129,6 +135,6 @@ public abstract class Renderer
 
         glEnableVertexArrayAttrib( vao, 1 );
         glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, 0 );
-        glVertexArrayAttribBinding( vao, 1, 0 );
+        glVertexArrayAttribBinding( vao, 1, 1 );
     }
 }
