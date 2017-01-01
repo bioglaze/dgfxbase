@@ -10,6 +10,7 @@ public align(1) struct Vertex
 {
     float[ 3 ] pos;
     float[ 2 ] uv;
+    float[ 3 ] normal;
 }
 
 public align(1) struct Face
@@ -64,7 +65,7 @@ extern(System) private
 
         try
         {
-            writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
+            //writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
         }
         catch(Exception e)
         {
@@ -90,7 +91,7 @@ public abstract class Renderer
 		glDepthFunc( GL_LESS );
 
         glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
-        glClearColor( 1, 0, 0, 1 );
+        glClearColor( 0, 0, 0, 1 );
     }
 
     public static void clearScreen()
@@ -98,7 +99,7 @@ public abstract class Renderer
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     }
 
-    public static void renderMesh( Mesh mesh, Vec3 position, Texture texture, Shader shader )
+    public static void renderMesh( Mesh mesh, Texture texture, Shader shader )
     {
 		for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
 		{
@@ -113,6 +114,7 @@ public abstract class Renderer
     {
         glCreateVertexArrays( 1, &vao );
         glBindVertexArray( vao );
+        glObjectLabel( GL_VERTEX_ARRAY, vao, -1, toStringz( debugName ) );
 
         uint vbo, ibo;
         glCreateBuffers( 1, &vbo );
@@ -122,6 +124,7 @@ public abstract class Renderer
         glNamedBufferStorage( vbo, vertices.length * Vertex.sizeof, vertices.ptr, flags );
         glVertexArrayVertexBuffer( vao, 0, vbo, 0, Vertex.sizeof );
         glVertexArrayVertexBuffer( vao, 1, vbo, 3 * 4, Vertex.sizeof );
+        glVertexArrayVertexBuffer( vao, 2, vbo, (2 + 3) * 4, Vertex.sizeof );
 
         glCreateBuffers( 1, &ibo );
         glObjectLabel( GL_BUFFER, ibo, -1, toStringz( "ibo" ) );
@@ -136,5 +139,9 @@ public abstract class Renderer
         glEnableVertexArrayAttrib( vao, 1 );
         glVertexArrayAttribFormat( vao, 1, 2, GL_FLOAT, GL_FALSE, 0 );
         glVertexArrayAttribBinding( vao, 1, 1 );
+
+        glEnableVertexArrayAttrib( vao, 2 );
+        glVertexArrayAttribFormat( vao, 2, 3, GL_FLOAT, GL_FALSE, 0 );
+        glVertexArrayAttribBinding( vao, 2, 2 );
     }
 }

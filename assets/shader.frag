@@ -2,7 +2,13 @@
 
 layout(binding=0) uniform sampler2D sTexture;
 
+/*layout(std140, binding=1) uniform PerLight
+{
+    vec3 direction;
+};*/
+
 in vec2 vUV;
+in vec3 vNormal;
 out vec4 fragColor;
 
 void main()

@@ -17,7 +17,8 @@ private struct ObjFace
 
 public align(1) struct PerObjectUBO
 {
-    Matrix4x4 mvp;
+    Matrix4x4 modelToClip;
+    Matrix4x4 modelToView;
 }
 
 private class SubMesh
@@ -55,7 +56,8 @@ private class SubMesh
             for (int i = 0; i < indices.length; ++i)
             {
                 if (almostEquals( interleavedVertices[ indices[ i ].a ].pos, tvertex ) &&
-                    almostEquals( interleavedVertices[ indices[ i ].a ].uv, ttcoord ))
+                    almostEquals( interleavedVertices[ indices[ i ].a ].uv, ttcoord ) &&
+                    almostEquals( interleavedVertices[ indices[ i ].a ].normal, tnormal ))
                 {
                     found = true;
                     face.a = indices[ i ].a;
@@ -68,6 +70,7 @@ private class SubMesh
                 Vertex vertex;
                 vertex.pos = [ tvertex.x, tvertex.y, tvertex.z ];
                 vertex.uv = [ ttcoord.x, ttcoord.y ];
+                vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
                 face.a = cast( ushort )(interleavedVertices.length - 1);
@@ -83,7 +86,8 @@ private class SubMesh
             for (int i = 0; i < indices.length; ++i)
             {
                 if (almostEquals( interleavedVertices[ indices[ i ].b ].pos, tvertex ) &&
-                    almostEquals( interleavedVertices[ indices[ i ].b ].uv, ttcoord ))
+                    almostEquals( interleavedVertices[ indices[ i ].b ].uv, ttcoord ) &&
+                    almostEquals( interleavedVertices[ indices[ i ].b ].normal, tnormal ))
                 {
                     found = true;
                     face.b = indices[ i ].b;
@@ -96,6 +100,7 @@ private class SubMesh
                 Vertex vertex;
                 vertex.pos = [ tvertex.x, tvertex.y, tvertex.z ];
                 vertex.uv = [ ttcoord.x, ttcoord.y ];
+                vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
                 face.b = cast( ushort )(interleavedVertices.length - 1);
@@ -111,7 +116,8 @@ private class SubMesh
             for (int i = 0; i < indices.length; ++i)
             {
                 if (almostEquals( interleavedVertices[ indices[ i ].c ].pos, tvertex ) &&
-                    almostEquals( interleavedVertices[ indices[ i ].c ].uv, ttcoord ))
+                    almostEquals( interleavedVertices[ indices[ i ].c ].uv, ttcoord ) &&
+                    almostEquals( interleavedVertices[ indices[ i ].c ].normal, tnormal ))
                 {
                     found = true;
                     face.c = indices[ i ].c;
@@ -124,6 +130,7 @@ private class SubMesh
                 Vertex vertex;
                 vertex.pos = [ tvertex.x, tvertex.y, tvertex.z ];
                 vertex.uv = [ ttcoord.x, ttcoord.y ];
+                vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
                 face.c = cast( ushort )(interleavedVertices.length - 1);
@@ -158,15 +165,22 @@ public class Mesh
 		glBindVertexArray( vaos[ subMeshIndex ] );
 	}
 
-    public void updateUBO( Matrix4x4 projection )
+    public void setPosition( Vec3 position )
+    {
+        this.position = position;
+    }
+
+    public void updateUBO( Matrix4x4 projection, Matrix4x4 view )
     {
         Matrix4x4 mvp;
         //mvp.scale( 1, 1, 1 );
         ++testRotation;
         mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
-        mvp.translate( Vec3( 0, 0, -20 ) );
+        mvp.translate( position );
+        multiply( mvp, view, mvp );
+        uboStruct.modelToView = mvp;
         multiply( mvp, projection, mvp );
-        uboStruct.mvp = mvp;
+        uboStruct.modelToClip = mvp;
 
 		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
 		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
@@ -270,6 +284,7 @@ public class Mesh
     private uint[] vaos;
     private uint ubo;
     private PerObjectUBO uboStruct;
-    float testRotation = 0;
-	SubMesh[] subMeshes;
+    private float testRotation = 0;
+	private SubMesh[] subMeshes;
+    private Vec3 position;
 }

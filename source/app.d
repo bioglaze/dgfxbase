@@ -2,6 +2,7 @@ import camera;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
 import derelict.opengl3.gl3;
+import dirlight;
 import mesh;
 import renderer;
 import shader;
@@ -59,6 +60,7 @@ void main()
     SDL_GL_SetSwapInterval( 1 );
     
     Mesh cube = new Mesh( "assets/cube.obj" );
+    cube.setPosition( Vec3( 0, 0, -20 ) );
 	//Mesh twoMeshes = new Mesh( "assets/pnt_tris_2_meshes.obj" );
     //Mesh sponza = new Mesh( "assets/sponza.obj" );
     
@@ -67,8 +69,14 @@ void main()
     
     Camera camera = new Camera();
     camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
+    camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
+    float camZ = 0;
 
     Texture gliderTex = new Texture( "assets/glider.tga" );
+    
+    DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
+
+    bool grabMouse = false;
 
     while (true)
     {
@@ -83,6 +91,24 @@ void main()
                     return;
                 }
             }
+            else if (e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                grabMouse = true;
+            }
+            else if (e.type == SDL_MOUSEBUTTONUP)
+            {
+                grabMouse = false;
+            }
+            else if (e.type == SDL_MOUSEMOTION)
+            {
+            
+            }
+            else if (e.type == SDL_MOUSEWHEEL)
+            {
+                camZ += (e.wheel.y > 0) ? -1 : 1;
+                writeln( "camZ: ", camZ );
+                camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
+            }
             else if (e.type == SDL_QUIT)
             {
                 return;
@@ -90,8 +116,8 @@ void main()
         }
 
         Renderer.clearScreen();
-        cube.updateUBO( camera.getProjection() );
-        Renderer.renderMesh( cube, Vec3( 0, 0, -20 ), gliderTex, shader );
+        cube.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderMesh( cube, gliderTex, shader );
 
 		//twoMeshes.updateUBO( camera.getProjection() );
         //Renderer.renderMesh( twoMeshes, Vec3( 0, 0, -20 ), gliderTex, shader );

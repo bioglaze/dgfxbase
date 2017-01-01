@@ -1,4 +1,5 @@
 import matrix4x4;
+import vec3;
 
 public class Camera
 {
@@ -10,11 +11,22 @@ public class Camera
         this.far = far;
 
         projectionMatrix.makeProjection( fovDegrees, aspect, near, far );
+        viewMatrix.makeIdentity();
+    }
+
+    public void lookAt( Vec3 eyePosition, Vec3 center )
+    {
+        viewMatrix.makeLookAt( eyePosition, center, Vec3( 0, 1, 0 ) );
     }
 
     public Matrix4x4 getProjection() const
     {
         return projectionMatrix;
+    }
+
+    public Matrix4x4 getView() const
+    {
+        return viewMatrix;
     }
 
     private float fovDegrees = 45;
