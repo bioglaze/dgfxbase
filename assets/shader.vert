@@ -11,12 +11,12 @@ layout(std140, binding=0) uniform PerObject
 };
 
 out vec2 vUV;
-out vec3 vNormal;
+out vec3 vNormalInView;
 
 void main()
 {
     gl_Position = modelToClip * vec4( inPosition, 1.0 );
     vUV = inUV;
-    vNormal = (modelToView * vec4( inNormal, 0 )).xyz;
+    vNormalInView = (modelToView * vec4( inNormal, 0 )).xyz;
 }
 

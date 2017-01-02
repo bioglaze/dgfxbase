@@ -1,3 +1,4 @@
+import core.stdc.string;
 import derelict.opengl3.gl3;
 import mesh;
 import shader;
@@ -5,6 +6,7 @@ import std.stdio;
 import std.string;
 import texture;
 import vec3;
+import dirlight;
 
 public align(1) struct Vertex
 {
@@ -78,6 +80,11 @@ extern(System) private
     }
 }
 
+private align(1) struct LightUBO
+{
+	Vec3 lightDirectionInView;
+}
+
 public abstract class Renderer
 {
     public static void initGL()
@@ -92,15 +99,32 @@ public abstract class Renderer
 
         glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
         glClearColor( 0, 0, 0, 1 );
+
+		glCreateBuffers( 1, &lightUbo );
+        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage( lightUbo, LightUBO.sizeof, &lightUboStruct, flags );
     }
+
+	private static void UpdateLightUbo( Vec3 lightDirectionInView )
+	{
+		lightUboStruct.lightDirectionInView = lightDirectionInView;
+
+		GLvoid* mappedMem = glMapNamedBuffer( lightUbo, GL_WRITE_ONLY );
+		memcpy( mappedMem, &lightUboStruct, LightUBO.sizeof );
+        glUnmapNamedBuffer( lightUbo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 1, lightUbo );
+	}
 
     public static void clearScreen()
     {
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     }
 
-    public static void renderMesh( Mesh mesh, Texture texture, Shader shader )
+    public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )
     {
+		UpdateLightUbo( Vec3( 0, 1, 0 ) );
+
 		for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
 		{
 			mesh.bind( subMeshIndex );
@@ -144,4 +168,7 @@ public abstract class Renderer
         glVertexArrayAttribFormat( vao, 2, 3, GL_FLOAT, GL_FALSE, 0 );
         glVertexArrayAttribBinding( vao, 2, 2 );
     }
+
+	private static LightUBO lightUboStruct;
+	private static uint lightUbo;
 }

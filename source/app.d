@@ -117,7 +117,7 @@ void main()
 
         Renderer.clearScreen();
         cube.updateUBO( camera.getProjection(), camera.getView() );
-        Renderer.renderMesh( cube, gliderTex, shader );
+        Renderer.renderMesh( cube, gliderTex, shader, dirLight );
 
 		//twoMeshes.updateUBO( camera.getProjection() );
         //Renderer.renderMesh( twoMeshes, Vec3( 0, 0, -20 ), gliderTex, shader );

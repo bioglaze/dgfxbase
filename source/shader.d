@@ -35,7 +35,7 @@ void bindGLFunc( void** ptr, string symName )
     *ptr = sym;
 }
 
-class Shader
+public class Shader
 {
     this( string vertexPath, string fragmentPath )
     {
