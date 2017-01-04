@@ -1,5 +1,6 @@
 import core.stdc.string;
 import derelict.opengl3.gl3;
+import matrix4x4;
 import mesh;
 import shader;
 import std.stdio;
@@ -85,6 +86,70 @@ private align(1) struct LightUBO
 	Vec3 lightDirectionInView;
 }
 
+public align(1) struct PerObjectUBO
+{
+    Matrix4x4 modelToClip;
+    Matrix4x4 modelToView;
+}
+
+public class Lines
+{
+    this( Vec3[] lines )
+    {
+        glCreateVertexArrays( 1, &vao );
+        glBindVertexArray( vao );
+        glObjectLabel( GL_VERTEX_ARRAY, vao, -1, toStringz( "lineVao" ) );
+
+        uint vbo, ibo;
+        glCreateBuffers( 1, &vbo );
+        glObjectLabel( GL_BUFFER, vbo, -1, toStringz( "lineVbo" ) );
+
+        const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+        glNamedBufferStorage( vbo, lines.length * Vec3.sizeof, lines.ptr, flags );
+        glVertexArrayVertexBuffer( vao, 0, vbo, 0, Vec3.sizeof );
+
+        glEnableVertexArrayAttrib( vao, 0 );
+        glVertexArrayAttribFormat( vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
+        glVertexArrayAttribBinding( vao, 0, 0 );
+
+        elementCount = lines.length;
+
+        glCreateBuffers( 1, &ubo );
+        glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
+    }
+
+    public void updateUBO( Matrix4x4 projection, Matrix4x4 view )
+    {
+        Matrix4x4 mvp;
+        mvp.makeIdentity();
+        multiply( mvp, view, mvp );
+        uboStruct.modelToView = mvp;
+        multiply( mvp, projection, mvp );
+        uboStruct.modelToClip = mvp;
+
+		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
+        glUnmapNamedBuffer( ubo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
+    }
+
+    public int getElementCount() const
+    {
+        return elementCount;
+    }
+
+    public void bind()
+    {
+		glBindVertexArray( vao );
+    }
+
+    private uint vao;
+    private uint elementCount;
+    private uint ubo;
+    private PerObjectUBO uboStruct;
+}
+
 public abstract class Renderer
 {
     public static void initGL()
@@ -119,6 +184,13 @@ public abstract class Renderer
     public static void clearScreen()
     {
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    }
+
+    public static void renderLines( Lines lines, Shader shader )
+    {
+        lines.bind();
+        shader.use();
+        glDrawArrays( GL_LINE_LOOP, 0, lines.getElementCount() * 2 );
     }
 
     public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )

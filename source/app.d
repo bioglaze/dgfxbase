@@ -60,12 +60,19 @@ void main()
     SDL_GL_SetSwapInterval( 1 );
     
     Mesh cube = new Mesh( "assets/cube.obj" );
-    cube.setPosition( Vec3( 0, 0, -20 ) );
-	//Mesh twoMeshes = new Mesh( "assets/pnt_tris_2_meshes.obj" );
-    //Mesh sponza = new Mesh( "assets/sponza.obj" );
+    Mesh cube1 = new Mesh( "assets/cube.obj" );
+    Mesh cube2 = new Mesh( "assets/cube.obj" );
+    Mesh cube3 = new Mesh( "assets/cube.obj" );
+
+    const float xoff = -4;
+    const float yoff = 4;
+    cube.setPosition( Vec3( 0, 2, -20 ) );
+    cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
+    cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
+    cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
     
     Shader shader = new Shader( "assets/shader.vert.spv", "assets/shader.frag.spv" );
-    shader.use();
+    Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
     
     Camera camera = new Camera();
     camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
@@ -75,6 +82,14 @@ void main()
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
     DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
+
+    Vec3[] linePoints = new Vec3[ 4 ];
+    linePoints[ 0 ] = Vec3( 0, 0, -20 );
+    linePoints[ 1 ] = Vec3( 5, 0, -20 );
+    linePoints[ 2 ] = Vec3( 5, 5, -20 );
+    linePoints[ 3 ] = Vec3( 0, 5, -20 );
+    
+    Lines lines = new Lines( linePoints );
 
     bool grabMouse = false;
 
@@ -116,11 +131,21 @@ void main()
         }
 
         Renderer.clearScreen();
+        
         cube.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderMesh( cube, gliderTex, shader, dirLight );
 
-		//twoMeshes.updateUBO( camera.getProjection() );
-        //Renderer.renderMesh( twoMeshes, Vec3( 0, 0, -20 ), gliderTex, shader );
+        cube1.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderMesh( cube1, gliderTex, shader, dirLight );
+
+        cube2.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderMesh( cube2, gliderTex, shader, dirLight );
+        
+        cube3.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
+
+        lines.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderLines( lines, lineShader );
 
         SDL_GL_SwapWindow( win );
     }

@@ -15,12 +15,6 @@ private struct ObjFace
     ushort n1, n2, n3;
 }
 
-public align(1) struct PerObjectUBO
-{
-    Matrix4x4 modelToClip;
-    Matrix4x4 modelToView;
-}
-
 private class SubMesh
 {
 	private bool almostEquals( float[ 3 ] v1, Vec3 v2 ) const
@@ -174,7 +168,7 @@ public class Mesh
     {
         Matrix4x4 mvp;
         //mvp.scale( 1, 1, 1 );
-        ++testRotation;
+        //++testRotation;
         mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
         mvp.translate( position );
         multiply( mvp, view, mvp );
