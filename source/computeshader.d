@@ -59,7 +59,7 @@ class ComputeShader
         auto fileData = cast(byte[]) read( path );
         GLuint shader = glCreateShader( GL_COMPUTE_SHADER );
         GLenum GL_SHADER_BINARY_FORMAT_SPIR_V_ARB = 0x9551;
-        glShaderBinary( 1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fileData, fileData.length );
+        glShaderBinary( 1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fileData, cast(int)fileData.length );
         glSpecializeShader( shader, "main", 0, null, null );
         Shader.printInfoLog( program, shader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, shader );

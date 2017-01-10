@@ -1,6 +1,41 @@
 import derelict.opengl3.gl3;
 import renderer;
+import std.exception;
 import std.stdio;
+import std.string;
+
+extern(System) @nogc nothrow
+{
+    alias da_glGetTextureHandleARB = GLuint function( GLuint );
+    alias da_glMakeTextureHandleResidentARB = void function( GLuint );
+}
+
+__gshared
+{
+    da_glGetTextureHandleARB glGetTextureHandleARB;
+    da_glMakeTextureHandleResidentARB glMakeTextureHandleResidentARB;
+}
+
+import derelict.opengl3.wgl;
+import derelict.opengl3.internal;
+
+void* loadGLFunc( string symName )
+{
+    version( Windows )
+    {
+        return cast( void* )wglGetProcAddress( symName.toStringz() );
+    }
+}
+
+void bindGLFunc( void** ptr, string symName )
+{
+    import derelict.util.exception : SymbolLoadException;
+
+    auto sym = loadGLFunc( symName );
+    if( !sym )
+        throw new SymbolLoadException( "Failed to load OpenGL symbol [" ~ symName ~ "]" );
+    *ptr = sym;
+}
 
 // Reads a true-color, uncompressed TGA
 private void readTGA( string path, out int width, out int height, out byte[] pixelData )
@@ -55,12 +90,16 @@ public class Texture
 {
     this( string path )
     {
+        bindGLFunc( cast(void**)&glGetTextureHandleARB, "glGetTextureHandleARB" );
+        bindGLFunc( cast(void**)&glMakeTextureHandleResidentARB, "glMakeTextureHandleResidentARB" );
+
         byte[] pixelData;
         readTGA( path, width, height, pixelData );
         
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
         glBindTextureUnit( 0, handle );
-        
+        //handle64 = glGetTextureHandleARB( handle );
+
 		glTextureStorage2D( handle, 1, GL_RGBA8, width, height );
         glTextureSubImage2D( handle, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixelData.ptr );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -87,4 +126,5 @@ public class Texture
 
     private int width, height;
     private GLuint handle;
+    private GLuint64 handle64;
 }

@@ -1,9 +1,10 @@
 import camera;
+import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
-import derelict.opengl3.gl3;
 import dirlight;
 import mesh;
+import octree;
 import renderer;
 import shader;
 import std.stdio;
@@ -63,6 +64,7 @@ void main()
     Mesh cube1 = new Mesh( "assets/cube.obj" );
     Mesh cube2 = new Mesh( "assets/cube.obj" );
     Mesh cube3 = new Mesh( "assets/cube.obj" );
+    Mesh suzanne = new Mesh( "assets/suzanne.obj" );
 
     const float xoff = -4;
     const float yoff = 4;
@@ -70,6 +72,8 @@ void main()
     cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
     cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
     cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
+    suzanne.setPosition( Vec3( 0 + xoff, -2 + yoff, -22 ) );
+    //suzanne.setScale( 2 );
     
     Shader shader = new Shader( "assets/shader.vert.spv", "assets/shader.frag.spv" );
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
@@ -90,6 +94,8 @@ void main()
     linePoints[ 3 ] = Vec3( 0, 5, -20 );
     
     Lines lines = new Lines( linePoints );
+
+    Octree octree = new Octree( suzanne.getSubMeshVertices( 0 ), suzanne.getSubMeshIndices( 0 ), 8, 2 );
 
     bool grabMouse = false;
 
@@ -143,6 +149,9 @@ void main()
         
         cube3.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
+
+        suzanne.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderMesh( suzanne, gliderTex, shader, dirLight );
 
         lines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( lines, lineShader );

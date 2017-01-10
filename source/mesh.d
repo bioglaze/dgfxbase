@@ -149,9 +149,19 @@ public class Mesh
         glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
     }
 
+    public Face[] getSubMeshIndices( int subMeshIndex )
+    {
+        return subMeshes[ subMeshIndex ].indices;
+    }
+
+    public Vertex[] getSubMeshVertices( int subMeshIndex )
+    {
+        return subMeshes[ subMeshIndex ].interleavedVertices;
+    }
+
 	public int getSubMeshCount() const
 	{
-		return subMeshes.length;
+		return cast(int)subMeshes.length;
 	}
 
 	public void bind( int subMeshIndex )
@@ -164,12 +174,20 @@ public class Mesh
         this.position = position;
     }
 
+    public void setScale( float scale )
+    {
+        this.scale = scale;
+    }
+
     public void updateUBO( Matrix4x4 projection, Matrix4x4 view )
     {
         Matrix4x4 mvp;
-        //mvp.scale( 1, 1, 1 );
+        mvp.makeIdentity();
+        mvp.scale( scale, scale, scale );
         //++testRotation;
-        mvp.makeRotationXYZ( testRotation, testRotation, testRotation );
+        Matrix4x4 rotation;
+        rotation.makeRotationXYZ( testRotation, testRotation, testRotation );
+        multiply( mvp, rotation, mvp );
         mvp.translate( position );
         multiply( mvp, view, mvp );
         uboStruct.modelToView = mvp;
@@ -281,4 +299,5 @@ public class Mesh
     private float testRotation = 0;
 	private SubMesh[] subMeshes;
     private Vec3 position;
+    private float scale = 1;
 }

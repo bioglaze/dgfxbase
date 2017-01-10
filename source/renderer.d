@@ -68,7 +68,7 @@ extern(System) private
 
         try
         {
-            //writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
+            writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
         }
         catch(Exception e)
         {
@@ -92,6 +92,11 @@ public align(1) struct PerObjectUBO
     Matrix4x4 modelToView;
 }
 
+public align(1) struct TextureUBO
+{
+    GLuint64[ 10 ] textures;
+}
+
 public class Lines
 {
     this( Vec3[] lines )
@@ -100,7 +105,7 @@ public class Lines
         glBindVertexArray( vao );
         glObjectLabel( GL_VERTEX_ARRAY, vao, -1, toStringz( "lineVao" ) );
 
-        uint vbo, ibo;
+        uint vbo;
         glCreateBuffers( 1, &vbo );
         glObjectLabel( GL_BUFFER, vbo, -1, toStringz( "lineVbo" ) );
 
@@ -112,7 +117,7 @@ public class Lines
         glVertexArrayAttribFormat( vao, 0, 3, GL_FLOAT, GL_FALSE, 0 );
         glVertexArrayAttribBinding( vao, 0, 0 );
 
-        elementCount = lines.length;
+        elementCount = cast(uint)lines.length;
 
         glCreateBuffers( 1, &ubo );
         glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
@@ -168,9 +173,12 @@ public abstract class Renderer
 		glCreateBuffers( 1, &lightUbo );
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( lightUbo, LightUBO.sizeof, &lightUboStruct, flags );
+
+		glCreateBuffers( 1, &textureUbo );
+        glNamedBufferStorage( textureUbo, TextureUBO.sizeof, &textureUboStruct, flags );
     }
 
-	private static void UpdateLightUbo( Vec3 lightDirectionInView )
+	private static void updateLightUbo( Vec3 lightDirectionInView )
 	{
 		lightUboStruct.lightDirectionInView = lightDirectionInView;
 
@@ -179,6 +187,17 @@ public abstract class Renderer
         glUnmapNamedBuffer( lightUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 1, lightUbo );
+	}
+
+    private static void updateTextureUbo( GLuint64[] textures )
+	{
+		textureUboStruct.textures = textures;
+
+		GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
+		memcpy( mappedMem, &textureUboStruct, TextureUBO.sizeof );
+        glUnmapNamedBuffer( textureUbo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 2, textureUbo );
 	}
 
     public static void clearScreen()
@@ -195,7 +214,7 @@ public abstract class Renderer
 
     public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )
     {
-		UpdateLightUbo( Vec3( 0, 1, 0 ) );
+		updateLightUbo( Vec3( 0, 1, 0 ) );
 
 		for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
 		{
@@ -243,4 +262,6 @@ public abstract class Renderer
 
 	private static LightUBO lightUboStruct;
 	private static uint lightUbo;
+    private static TextureUBO textureUboStruct;
+	private static uint textureUbo;
 }

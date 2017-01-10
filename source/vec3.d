@@ -59,7 +59,28 @@ struct Vec3
         {
             return Vec3( x * f, y * f, z * f );
         }
+        else static if (op == "/")
+        {
+            return Vec3( x / f, y / f, z / f );
+        }
         else static assert( false, "operator " ~ op ~ " not implemented" );
+    }
+
+    public float maxComponent() const
+    {
+        float maxComp = x;
+
+        if (y > maxComp)
+        {
+            maxComp = y;
+        }
+
+        if (z > maxComp)
+        {
+            maxComp = z;
+        }
+
+        return maxComp;
     }
 
     float x = 0, y = 0, z = 0;

@@ -200,14 +200,14 @@ public class Shader
         auto vertexData = cast(byte[]) read( vertexPath );
         GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
         GLenum GL_SHADER_BINARY_FORMAT_SPIR_V_ARB = 0x9551;
-        glShaderBinary( 1, &vertexShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)vertexData, vertexData.length );
+        glShaderBinary( 1, &vertexShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)vertexData, cast(int)(vertexData.length) );
         glSpecializeShader( vertexShader, "main", 0, null, null );
         printInfoLog( program, vertexShader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, vertexShader );
 
         auto fragmentData = cast(byte[]) read( fragmentPath );
         GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-        glShaderBinary( 1, &fragmentShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fragmentData, fragmentData.length );
+        glShaderBinary( 1, &fragmentShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, cast(const void*)fragmentData, cast(int)(fragmentData.length) );
         glSpecializeShader( fragmentShader, "main", 0, null, null );
         printInfoLog( program, fragmentShader, GL_COMPILE_STATUS, GL_LINK_STATUS );
         glAttachShader( program, fragmentShader );

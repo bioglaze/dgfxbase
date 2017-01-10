@@ -1,3 +1,4 @@
+import core.simd;
 import std.math: abs, cos, isNaN, PI, sin, tan;
 import std.string;
 import vec3;
@@ -22,6 +23,34 @@ void multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 result )
     result.checkForNaN();
 }
 
+/*void multiply( Matrix4x4 a, Matrix4x4 b, out Matrix4x4 outResult )
+{
+    Matrix4x4 result;
+    Matrix4x4 matA = a;
+    Matrix4x4 matB = b;
+
+    float4 a_line, b_line, r_line;
+
+    for (int i = 0; i < 16; i += 4)
+    {
+        // unroll the first step of the loop to avoid having to initialize r_line to zero
+        a_line = _mm_load_ps( b );
+        b_line = _mm_set1_ps( a[ i ] );
+        r_line = _mm_mul_ps( a_line, b_line );
+
+        for (int j = 1; j < 4; j++)
+        {
+            a_line = _mm_load_ps( &b[ j * 4 ] );
+            b_line = _mm_set1_ps(  a[ i + j ] );
+            r_line = _mm_add_ps(_mm_mul_ps( a_line, b_line ), r_line);
+        }
+
+        _mm_store_ps( &result.m[ i ], r_line );
+    }
+
+    outResult = result;
+}*/
+
 void transformPoint( Vec3 vec, Matrix4x4 mat, out Vec3 vOut )
 {
     vOut.x = mat.m[0] * vec.x + mat.m[ 4 ] * vec.y + mat.m[ 8] * vec.z + mat.m[12];
@@ -29,7 +58,7 @@ void transformPoint( Vec3 vec, Matrix4x4 mat, out Vec3 vOut )
     vOut.z = mat.m[2] * vec.x + mat.m[ 6 ] * vec.y + mat.m[10] * vec.z + mat.m[14];
 }
 
-struct Matrix4x4
+public align(16) struct Matrix4x4
 {
     string toString() const
     {
