@@ -37,12 +37,15 @@ void bindGLFunc( void** ptr, string symName )
 
 public class Shader
 {
+    public static void loadExtensionFunctions()
+    {
+        bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
+    }
+
     this( string vertexPath, string fragmentPath )
     {
         try
         {
-            bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
-
             program = glCreateProgram();
             glObjectLabel( GL_PROGRAM, program, -1, toStringz( vertexPath ) );
 

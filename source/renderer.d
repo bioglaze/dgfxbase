@@ -159,6 +159,9 @@ public abstract class Renderer
 {
     public static void initGL()
     {
+        Texture.loadExtensionFunctions();
+        Shader.loadExtensionFunctions();
+
         glDebugMessageCallback( &loggingCallbackOpenGL, null );
         glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
         glEnable( GL_DEBUG_OUTPUT );
@@ -189,7 +192,7 @@ public abstract class Renderer
         glBindBufferBase( GL_UNIFORM_BUFFER, 1, lightUbo );
 	}
 
-    private static void updateTextureUbo( GLuint64[] textures )
+    public static void updateTextureUbo( GLuint64[ 10 ] textures )
 	{
 		textureUboStruct.textures = textures;
 

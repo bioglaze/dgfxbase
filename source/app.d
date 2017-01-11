@@ -75,7 +75,7 @@ void main()
     suzanne.setPosition( Vec3( 0 + xoff, -2 + yoff, -22 ) );
     //suzanne.setScale( 2 );
     
-    Shader shader = new Shader( "assets/shader.vert.spv", "assets/shader.frag.spv" );
+    Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
     
     Camera camera = new Camera();
@@ -85,6 +85,12 @@ void main()
 
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
+    GLuint64[ 10 ] textures;
+    textures[ 0 ] = gliderTex.getHandle64();
+    gliderTex.makeResident();
+
+    Renderer.updateTextureUbo( textures );
+
     DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
 
     Vec3[] linePoints = new Vec3[ 4 ];
