@@ -83,7 +83,7 @@ extern(System) private
 
 private align(1) struct LightUBO
 {
-	Vec3 lightDirectionInView;
+    Vec3 lightDirectionInView;
 }
 
 public align(1) struct PerObjectUBO
@@ -132,8 +132,8 @@ public class Lines
         multiply( mvp, projection, mvp );
         uboStruct.modelToClip = mvp;
 
-		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
-		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
+        GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+        memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
         glUnmapNamedBuffer( ubo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
@@ -146,7 +146,7 @@ public class Lines
 
     public void bind()
     {
-		glBindVertexArray( vao );
+        glBindVertexArray( vao );
     }
 
     private uint vao;
@@ -166,31 +166,32 @@ public abstract class Renderer
         glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
         glEnable( GL_DEBUG_OUTPUT );
         glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+        glEnable( GL_FRAMEBUFFER_SRGB );
         glEnable( GL_CULL_FACE );
         glEnable( GL_DEPTH_TEST );
-		glDepthFunc( GL_LESS );
+        glDepthFunc( GL_LESS );
 
         glClipControl( GL_LOWER_LEFT, GL_ZERO_TO_ONE );
         glClearColor( 0, 0, 0, 1 );
 
-		glCreateBuffers( 1, &lightUbo );
+        glCreateBuffers( 1, &lightUbo );
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( lightUbo, LightUBO.sizeof, &lightUboStruct, flags );
 
-		glCreateBuffers( 1, &textureUbo );
+        glCreateBuffers( 1, &textureUbo );
         glNamedBufferStorage( textureUbo, TextureUBO.sizeof, &textureUboStruct, flags );
     }
 
-	private static void updateLightUbo( Vec3 lightDirectionInView )
-	{
-		lightUboStruct.lightDirectionInView = lightDirectionInView;
+    private static void updateLightUbo( Vec3 lightDirectionInView )
+    {
+        lightUboStruct.lightDirectionInView = lightDirectionInView;
 
-		GLvoid* mappedMem = glMapNamedBuffer( lightUbo, GL_WRITE_ONLY );
-		memcpy( mappedMem, &lightUboStruct, LightUBO.sizeof );
+        GLvoid* mappedMem = glMapNamedBuffer( lightUbo, GL_WRITE_ONLY );
+        memcpy( mappedMem, &lightUboStruct, LightUBO.sizeof );
         glUnmapNamedBuffer( lightUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 1, lightUbo );
-	}
+    }
 
     public static void updateTextureUbo( GLuint64[ 10 ] textures )
 	{
@@ -217,15 +218,15 @@ public abstract class Renderer
 
     public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )
     {
-		updateLightUbo( Vec3( 0, 1, 0 ) );
+        updateLightUbo( Vec3( 0, 1, 0 ) );
 
-		for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
-		{
-			mesh.bind( subMeshIndex );
-			texture.bind( 0 );
-			shader.use();
-			glDrawElements( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_SHORT, null );
-		}
+        for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
+        {
+            mesh.bind( subMeshIndex );
+            texture.bind( 0 );
+            shader.use();
+            glDrawElements( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_SHORT, null );
+        }
     }
 
     public static void generateVAO( Vertex[] vertices, Face[] faces, string debugName, out uint vao )
@@ -263,8 +264,8 @@ public abstract class Renderer
         glVertexArrayAttribBinding( vao, 2, 2 );
     }
 
-	private static LightUBO lightUboStruct;
-	private static uint lightUbo;
+    private static LightUBO lightUboStruct;
+    private static uint lightUbo;
     private static TextureUBO textureUboStruct;
-	private static uint textureUbo;
+    private static uint textureUbo;
 }

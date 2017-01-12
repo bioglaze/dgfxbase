@@ -8,6 +8,7 @@ OpenGL 4.5 basecode using D language and Derelict SDL and OpenGL libraries.
   - GL object debug labels
   - Direct State Access
   - Uniform buffers
+  - Gamma-correct rendering
   - NDC depth in range 0-1 like in other APIs
   - Bindless textures (not for SPIR-V shaders, as they don't support it)
   

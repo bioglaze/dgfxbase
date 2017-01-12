@@ -16,7 +16,7 @@ void main()
 {
     DerelictSDL2.load();
         
-    if (SDL_Init( SDL_INIT_EVERYTHING ) < 0)
+    if (SDL_Init( SDL_INIT_VIDEO ) < 0)
     {
         const(char)* message = SDL_GetError();
         writeln( "Failed to initialize SDL: ", message );
@@ -37,12 +37,7 @@ void main()
 
     ShouldThrow missingSymFunc( string symName )
     {
-        if (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d" || symName == "glEnableClientStateiEXT")
-        {
-            return ShouldThrow.No;
-        }
-
-        return ShouldThrow.Yes;
+        return (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d" || symName == "glEnableClientStateiEXT") ? ShouldThrow.No : ShouldThrow.Yes;
     }
 
     DerelictGL3.missingSymbolCallback = &missingSymFunc;

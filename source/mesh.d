@@ -17,7 +17,7 @@ private struct ObjFace
 
 private class SubMesh
 {
-	private bool almostEquals( float[ 3 ] v1, Vec3 v2 ) const
+    private bool almostEquals( float[ 3 ] v1, Vec3 v2 ) const
     {
         if (abs( v1[ 0 ] - v2.x ) > 0.0001f) { return false; }
         if (abs( v1[ 1 ] - v2.y ) > 0.0001f) { return false; }
@@ -32,7 +32,7 @@ private class SubMesh
         return true;
     }
 
-	private void interleave( ref Vec3[] vertices, ref Vec3[] normals, ref Vec3[] texcoords, ObjFace[] faces )
+    private void interleave( ref Vec3[] vertices, ref Vec3[] normals, ref Vec3[] texcoords, ObjFace[] faces )
     {
         Face face;
 
@@ -134,8 +134,9 @@ private class SubMesh
         }
     }
 
-	public Vertex[] interleavedVertices;
+    public Vertex[] interleavedVertices;
     public Face[] indices;
+    public string name;
 }
 
 public class Mesh
@@ -159,15 +160,15 @@ public class Mesh
         return subMeshes[ subMeshIndex ].interleavedVertices;
     }
 
-	public int getSubMeshCount() const
-	{
-		return cast(int)subMeshes.length;
-	}
+    public int getSubMeshCount() const
+    {
+        return cast(int)subMeshes.length;
+    }
 
-	public void bind( int subMeshIndex )
-	{
-		glBindVertexArray( vaos[ subMeshIndex ] );
-	}
+    public void bind( int subMeshIndex )
+    {
+        glBindVertexArray( vaos[ subMeshIndex ] );
+    }
 
     public void setPosition( Vec3 position )
     {
@@ -194,20 +195,20 @@ public class Mesh
         multiply( mvp, projection, mvp );
         uboStruct.modelToClip = mvp;
 
-		GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
-		memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
+        GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
+        memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
         glUnmapNamedBuffer( ubo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
     }
 
     // Tested only with models exported from Blender. File must contain one mesh only,
-    // exported with triangulation, texcoords and normals.
+    // exported with triangulation, texcoords and normals. Does not support smoothing groups.
     private void loadObj( string path )
     {
-		subMeshes = new SubMesh[ 1 ];
-		subMeshes[ 0 ] = new SubMesh();
-		vaos = new uint[ subMeshes.length ];
+        subMeshes = new SubMesh[ 1 ];
+        subMeshes[ 0 ] = new SubMesh();
+        vaos = new uint[ subMeshes.length ];
 
 		Vec3[] vertices;
         Vec3[] normals;
@@ -226,7 +227,13 @@ public class Mesh
         {
             string line = strip( file.readln() );
 
-            if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
+            if (line.length > 1 && (line[ 0 ] == 'o' || line[ 0 ] == 'g'))
+            {
+                string o, name;
+                uint items = formattedRead( line, "%s %s", &o, &name );
+                writeln("name: ", name);
+            }
+            else if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
             {
                 Vec3 vertex;
                 string v;
@@ -284,7 +291,7 @@ public class Mesh
             }
         }
 
-		subMeshes[ 0 ].interleave( vertices, normals, texcoords, faces );
+        subMeshes[ 0 ].interleave( vertices, normals, texcoords, faces );
         Renderer.generateVAO( subMeshes[ 0 ].interleavedVertices, subMeshes[ 0 ].indices, path, vaos[ 0 ] );
     }
 
@@ -297,7 +304,7 @@ public class Mesh
     private uint ubo;
     private PerObjectUBO uboStruct;
     private float testRotation = 0;
-	private SubMesh[] subMeshes;
+    private SubMesh[] subMeshes;
     private Vec3 position;
     private float scale = 1;
 }

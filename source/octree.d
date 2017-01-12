@@ -37,6 +37,11 @@ private struct Aabb
 
     public Vec3 getCenter() const
     {
+        return (min + max) / 2;
+    }
+
+    public Vec3 getHalfSize() const
+    {
         return (max - min) / 2;
     }
 
@@ -153,6 +158,11 @@ public class Octree
                     childNode.nodeType = NodeType.Leaf;
                     updateLeafNodeDistanceValue( childNode, vertices, childTriangleIndices );
                 }
+                else
+                {
+                    childNode.nodeType = NodeType.Internal;
+                    //subdivide( childNode, vertices, childTriangleIndices );
+                }
             }
         }
     }
@@ -190,16 +200,8 @@ public class Octree
 
     private static bool triangleIntersectsAABB( Vec3[ 3 ] triangleVertices, Aabb aabb )
     {
-        // TODO: Check boxCenter and boxHalfSize
-        Vec3 boxCenter;
-        boxCenter.x = (aabb.max.x - aabb.min.x) / 2;
-        boxCenter.y = (aabb.max.y - aabb.min.y) / 2;
-        boxCenter.z = (aabb.max.z - aabb.min.z) / 2;
-
-        Vec3 boxHalfSize;
-        boxHalfSize.x = (aabb.max.x - aabb.min.x) / 2;
-        boxHalfSize.y = (aabb.max.y - aabb.min.y) / 2;
-        boxHalfSize.z = (aabb.max.z - aabb.min.z) / 2;
+        Vec3 boxCenter = aabb.getCenter();
+        Vec3 boxHalfSize = aabb.getHalfSize();
 
         Vec3[ 3 ] triVerts;
 

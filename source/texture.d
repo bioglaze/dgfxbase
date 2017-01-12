@@ -102,15 +102,16 @@ public class Texture
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
         glBindTextureUnit( 0, handle );
 
-		glTextureStorage2D( handle, 1, GL_RGBA8, width, height );
+        glTextureStorage2D( handle, 1, GL_SRGB8_ALPHA8, width, height );
         glTextureSubImage2D( handle, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixelData.ptr );
 
         glTextureParameteri( handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-        glTextureParameteri( handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTextureParameteri( handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
         glTextureParameteri( handle, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTextureParameteri( handle, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glTextureParameteri( handle, GL_TEXTURE_WRAP_R, GL_REPEAT );
 
+        glGenerateTextureMipmap( handle );
         handle64 = glGetTextureHandleARB( handle );
     }
 
