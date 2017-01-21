@@ -97,6 +97,7 @@ void main()
     Lines lines = new Lines( linePoints );
 
     Octree octree = new Octree( suzanne.getSubMeshVertices( 0 ), suzanne.getSubMeshIndices( 0 ), 8, 2 );
+    //Lines octreeLines = new Lines( octree.getLines() );
 
     bool grabMouse = false;
 
@@ -131,6 +132,19 @@ void main()
                 writeln( "camZ: ", camZ );
                 camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
             }
+            else if (e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDLK_w)
+                {
+                    camZ += 0.1f;
+                }
+                else if (e.key.keysym.sym == SDLK_s)
+                {
+                    camZ -= 0.1f;
+                }
+
+                camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
+            }
             else if (e.type == SDL_QUIT)
             {
                 return;
@@ -156,6 +170,9 @@ void main()
 
         lines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( lines, lineShader );
+
+        //octreeLines.updateUBO( camera.getProjection(), camera.getView() );
+        //Renderer.renderLines( octreeLines, lineShader );
 
         SDL_GL_SwapWindow( win );
     }

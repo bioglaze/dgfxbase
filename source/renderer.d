@@ -66,9 +66,14 @@ extern(System) private
 
         const(char)[] text = fromStringz( message );
 
+        const int nvidiaPerfWarningId = 131185;
+
         try
         {
-            writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
+            if (id != nvidiaPerfWarningId)
+            {
+                writefln( "OpenGL: %s [source=%s type=%s severity=%s id=%u", text, sourceFmt, typeFmt, severityFmt, id );
+            }
         }
         catch(Exception e)
         {

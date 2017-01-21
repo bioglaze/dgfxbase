@@ -1,7 +1,10 @@
+import intersection;
 import renderer;
 import std.math: abs;
 import std.stdio;
 import vec3;
+
+// Generation code adapted from http://cg.alexandra.dk/?p=3836
 
 int nextPowerOfTwo( int x )
 {
@@ -27,28 +30,6 @@ private enum NodeType
     Leaf
 }
 
-private struct Aabb
-{
-    this( Vec3 min, Vec3 max )
-    {
-        this.min = min;
-        this.max = max;
-    }
-
-    public Vec3 getCenter() const
-    {
-        return (min + max) / 2;
-    }
-
-    public Vec3 getHalfSize() const
-    {
-        return (max - min) / 2;
-    }
-
-    public Vec3 min;
-    public Vec3 max;
-}
-
 private class OctreeNode
 {
     public OctreeNode[ 8 ] children;
@@ -58,7 +39,11 @@ private class OctreeNode
     public float distanceToSurface;
 }
 
-// Generation code adapted from http://cg.alexandra.dk/?p=3836
+public Vec3 uniformSphericalSampling()
+{
+    return Vec3( 1, 1, 1 );
+}
+
 public class Octree
 {
     this( Vertex[] vertices, Face[] indices, int voxelSize, int borderSize )
@@ -69,6 +54,11 @@ public class Octree
         flattenVertices( vertices, indices, flattenedVertices );
 
         Aabb meshAabb = getMeshAABB( flattenedVertices );
+
+        for (int dirIndex = 0; dirIndex < 200; ++dirIndex)
+        {
+            sampleDirections ~= uniformSphericalSampling();
+        }
 
         // 1. Scales the AABB to find the correct octree dimension.
         meshAabb.min.x *= (1.0f / voxelSize);
@@ -95,8 +85,65 @@ public class Octree
         Vec3 rootAABBMax = octreeOrigin + Vec3( worldSize, worldSize, worldSize );
 
         // 4. Subdivision
-        OctreeNode rootNode = new OctreeNode();
+        rootNode = new OctreeNode();
         subdivide( rootNode, vertices, indices );
+        const float minCoverage = 0.9f;
+        updateInternalEmptyLeafsSign( rootNode, rootNode, minCoverage );
+    }
+
+    public Vec3[] getLines()
+    {
+        Vec3[] lines;
+        getNodeLines( rootNode, lines );
+        return lines;
+    }
+
+    private Vec3[] getNodeLines( OctreeNode node, Vec3[] lines )
+    {
+        if (node.nodeType != NodeType.EmptyLeaf)
+        {
+            lines ~= node.worldAabb.getLines();
+
+            for (int childIndex = 0; childIndex < 8; ++childIndex)
+            {
+                getNodeLines( node.children[ childIndex ], lines );
+            }
+        }
+
+        return lines;
+    }
+
+    private void updateInternalEmptyLeafsSign( OctreeNode rootNode, OctreeNode node, float minCoverage )
+    {
+        if (node is null)
+        {
+            return;
+        }
+
+        if (node.nodeType == NodeType.Leaf)
+        {
+            return;
+        }
+
+        if (node.nodeType == NodeType.Internal)
+        {
+            for (int childIndex = 0; childIndex < 8; ++childIndex)
+            {
+                updateInternalEmptyLeafsSign( rootNode, node.children[ childIndex ], minCoverage );
+            }
+
+            return;
+        }
+
+        int coverage = 0;
+        int misses = 0;
+        const int sampleDirectionsLength = 200;
+        int maxMisses = sampleDirectionsLength / 4;
+
+        for (int i = 0; i < sampleDirectionsLength; ++i)
+        {
+        
+        }
     }
 
     private void subdivide( OctreeNode parentNode, Vertex[] vertices, Face[] nodeTriangleIndices )
@@ -161,7 +208,18 @@ public class Octree
                 else
                 {
                     childNode.nodeType = NodeType.Internal;
-                    //subdivide( childNode, vertices, childTriangleIndices );
+
+                    Face[] childTriangles = new Face[ childTriangleIndices.length / 3 ];
+                    int i = 0;
+                    for (int triIndex = 0; triIndex < childTriangleIndices.length; triIndex += 3)
+                    {
+                        childTriangles[ i ].a = cast(ushort)childTriangleIndices[ triIndex * 3 + 0 ];
+                        childTriangles[ i ].b = cast(ushort)childTriangleIndices[ triIndex * 3 + 1 ];
+                        childTriangles[ i ].c = cast(ushort)childTriangleIndices[ triIndex * 3 + 2 ];
+                        ++i;
+                    }
+
+                    subdivide( childNode, vertices, childTriangles );
                 }
             }
         }
@@ -179,7 +237,7 @@ public class Octree
             triangleVerts[ 2 ] = Vec3( vertices[ faceIndex + 2 ].pos[ 0 ], vertices[ faceIndex + 2 ].pos[ 1 ], vertices[ faceIndex + 2 ].pos[ 2 ] );
 
             const Vec3 normal = cross( triangleVerts[ 2 ] - triangleVerts[ 0 ], triangleVerts[ 1 ] - triangleVerts[ 0 ] );
-            const Vec3 closestPoint = closestPointOnTriangle( triangleVerts, leafNode.worldAabb );
+            const Vec3 closestPoint = closestPointOnTriangle( triangleVerts, leafNode.worldAabb, leafNode.worldAabb.getCenter() );
             Vec3 delta = closestPoint - leafNode.worldAabb.getCenter();
             const float sign = (dot( delta, normal ) < 0) ? -1 : 1;
             float distance = length( delta );
@@ -191,26 +249,6 @@ public class Octree
         }
 
         leafNode.distanceToSurface = minDistance;
-    }
-
-    private static Vec3 closestPointOnTriangle( Vec3[ 3 ] triangleVerts, Aabb nodeWorldAabb )
-    {
-        return Vec3(0,0,0);
-    }
-
-    private static bool triangleIntersectsAABB( Vec3[ 3 ] triangleVertices, Aabb aabb )
-    {
-        Vec3 boxCenter = aabb.getCenter();
-        Vec3 boxHalfSize = aabb.getHalfSize();
-
-        Vec3[ 3 ] triVerts;
-
-        return triBoxOverlap( boxCenter, boxHalfSize, triVerts ) > 0;
-    }
-
-    private static int triBoxOverlap( Vec3 boxCenter, Vec3 boxHalfSize, Vec3[] triVerts )
-    {
-        return 0;
     }
 
     private void flattenVertices( Vertex[] vertices, Face[] indices, out Vertex[] flattenedVertices )
@@ -263,6 +301,8 @@ public class Octree
     private float voxelSize;
     private int octreeDim;
     private Vec3 octreeOrigin;
+    private Vec3[] sampleDirections;
+    private OctreeNode rootNode;
 }
 
 unittest
