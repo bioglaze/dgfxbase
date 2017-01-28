@@ -1,5 +1,5 @@
 import core.simd;
-import std.math: abs, cos, isNaN, PI, sin, tan;
+import std.math: abs, approxEqual, cos, isNaN, PI, sin, tan;
 import std.string;
 import vec3;
 
@@ -119,6 +119,10 @@ public align(16) struct Matrix4x4
 
     void makeProjection( float left, float right, float bottom, float top, float nearDepth, float farDepth )
     {
+        assert( !approxEqual( (right - left), 0.0f ), "division by 0" );
+        assert( !approxEqual( (farDepth - nearDepth), 0.0f ), "division by 0" );
+        assert( !approxEqual( (top - bottom), 0.0f ), "division by 0" );
+
         const float tx = -((right + left) / (right - left));
         const float ty = -((top + bottom) / (top - bottom));
         const float tz = -((farDepth + nearDepth) / (farDepth - nearDepth));
@@ -136,6 +140,8 @@ public align(16) struct Matrix4x4
 	
     void makeProjection( float fovDegrees, float aspect, float nearDepth, float farDepth )
     {
+        assert( !approxEqual( (farDepth - nearDepth), 0.0f ), "division by 0" );
+
         const float top = tan( fovDegrees * PI / 360.0f ) * nearDepth;
         const float bottom = -top;
         const float left = aspect * bottom;

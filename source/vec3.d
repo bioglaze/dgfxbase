@@ -15,7 +15,8 @@ public float dot( Vec3 v1, Vec3 v2 )
 public void normalize( ref Vec3 v )
 {
     const float len = length( v );
-    //assert( approxEqual( len, 0.0f ), "length is 0" );
+    assert( !approxEqual( len, 0.0f ), "length is 0" );
+
     v.x /= len;
     v.y /= len;
     v.z /= len;
@@ -50,6 +51,10 @@ struct Vec3
         {
             return Vec3( x - v.x, y - v.y, z - v.z );
         }
+        else static if (op == "*")
+        {
+            return Vec3( x * v.x, y * v.y, z * v.z );
+        }
         else static assert( false, "operator " ~ op ~ " not implemented" );
     }
 
@@ -61,6 +66,7 @@ struct Vec3
         }
         else static if (op == "/")
         {
+            assert( !approxEqual( f, 0.0f ), "f is 0" );
             return Vec3( x / f, y / f, z / f );
         }
         else static assert( false, "operator " ~ op ~ " not implemented" );

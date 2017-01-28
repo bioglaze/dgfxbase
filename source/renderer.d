@@ -1,5 +1,6 @@
 import core.stdc.string;
 import derelict.opengl3.gl3;
+//import Font;
 import matrix4x4;
 import mesh;
 import shader;
@@ -106,6 +107,8 @@ public class Lines
 {
     this( Vec3[] lines )
     {
+        assert( lines.length > 0, "empty lines" );
+
         glCreateVertexArrays( 1, &vao );
         glBindVertexArray( vao );
         glObjectLabel( GL_VERTEX_ARRAY, vao, -1, toStringz( "lineVao" ) );
@@ -187,6 +190,33 @@ public abstract class Renderer
         glNamedBufferStorage( textureUbo, TextureUBO.sizeof, &textureUboStruct, flags );
     }
 
+    /*public static void drawText( string text, Font font, Texture fontTex, float x, float y )
+    {
+        if (text != cachedText)
+        {     
+            Vertex[] vertices;
+            Face[] faces;
+            font.getGeometry( text, fontTex.getWidth(), fontTex.getHeight(), vertices, faces );
+            generateVAO( vertices, faces, "textVAO", textVao );
+
+            cachedText = text;
+            textFaceLength = cast(int)faces.length;
+        }
+
+        fontTex.Bind();
+
+        shader.Use();
+
+        Matrix4x4 mvp;
+        mvp.MakeIdentity();
+        //mvp.Scale( xScale, yScale, 1 );
+        mvp.Translate( Vec3.Vec3( x, y, 0 ) );
+        Matrix4x4.Multiply( mvp, orthoMat, mvp );
+        shader.SetMatrix44( "mvp", mvp.m );
+
+        drawVAO( textVAO, textFaceLength * 3, [ 1, 1, 1, 1 ] );
+    }*/
+
     private static void updateLightUbo( Vec3 lightDirectionInView )
     {
         lightUboStruct.lightDirectionInView = lightDirectionInView;
@@ -218,7 +248,7 @@ public abstract class Renderer
     {
         lines.bind();
         shader.use();
-        glDrawArrays( GL_LINE_LOOP, 0, lines.getElementCount() * 2 );
+        glDrawArrays( GL_LINES, 0, lines.getElementCount() * 2 );
     }
 
     public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )
@@ -273,4 +303,5 @@ public abstract class Renderer
     private static uint lightUbo;
     private static TextureUBO textureUboStruct;
     private static uint textureUbo;
+    private static uint textVao;
 }

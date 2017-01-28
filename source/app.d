@@ -3,6 +3,8 @@ import derelict.opengl3.gl3;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
 import dirlight;
+import Font;
+import intersection;
 import mesh;
 import octree;
 import renderer;
@@ -60,6 +62,7 @@ void main()
     Mesh cube2 = new Mesh( "assets/cube.obj" );
     Mesh cube3 = new Mesh( "assets/cube.obj" );
     Mesh suzanne = new Mesh( "assets/suzanne.obj" );
+    //Mesh suzanne = new Mesh( "assets/armadillo.obj" );
 
     const float xoff = -4;
     const float yoff = 4;
@@ -67,8 +70,8 @@ void main()
     cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
     cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
     cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
-    suzanne.setPosition( Vec3( 0 + xoff, -2 + yoff, -22 ) );
-    //suzanne.setScale( 2 );
+    suzanne.setPosition( Vec3( 0 + xoff, -5 + yoff, -15 ) );
+    //suzanne.setScale( 0.05f );
     
     Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
@@ -88,16 +91,31 @@ void main()
 
     DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
 
-    Vec3[] linePoints = new Vec3[ 4 ];
-    linePoints[ 0 ] = Vec3( 0, 0, -20 );
-    linePoints[ 1 ] = Vec3( 5, 0, -20 );
-    linePoints[ 2 ] = Vec3( 5, 5, -20 );
-    linePoints[ 3 ] = Vec3( 0, 5, -20 );
+    Octree octree = new Octree( suzanne.getSubMeshVertices( 0 ), suzanne.getSubMeshIndices( 0 ), 1.0f, 0.9f );
     
-    Lines lines = new Lines( linePoints );
+    Vec3[] suzanneLinesModelSpace = octree.getLines();
+    Vec3[] suzanneLinesWorldSpace;
 
-    Octree octree = new Octree( suzanne.getSubMeshVertices( 0 ), suzanne.getSubMeshIndices( 0 ), 8, 2 );
-    //Lines octreeLines = new Lines( octree.getLines() );
+    for (int lineIndex = 0; lineIndex < suzanneLinesModelSpace.length; ++lineIndex)
+    {
+        suzanneLinesWorldSpace ~= suzanneLinesModelSpace[ lineIndex ] + suzanne.getPosition();
+    }
+
+    Lines octreeLines = new Lines( suzanneLinesWorldSpace );
+
+    Vec3 aabbPos = Vec3( 5, 5, -22 );
+
+    Aabb testAabb;
+    testAabb.min.x = -1 + aabbPos.x;
+    testAabb.min.y = -1 + aabbPos.y;
+    testAabb.min.z = -1 + aabbPos.z;
+    testAabb.max.x =  1 + aabbPos.x;
+    testAabb.max.y =  1 + aabbPos.y;
+    testAabb.max.z =  1 + aabbPos.z;
+    Lines aabbLines = new Lines( testAabb.getLines() );
+
+    Font font = new Font( "assets/font.bin" );
+    Texture fontTex = new Texture( "assets/font.tga" );
 
     bool grabMouse = false;
 
@@ -156,24 +174,34 @@ void main()
         cube.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderMesh( cube, gliderTex, shader, dirLight );
 
-        cube1.updateUBO( camera.getProjection(), camera.getView() );
-        Renderer.renderMesh( cube1, gliderTex, shader, dirLight );
+        //cube1.updateUBO( camera.getProjection(), camera.getView() );
+        //Renderer.renderMesh( cube1, gliderTex, shader, dirLight );
 
-        cube2.updateUBO( camera.getProjection(), camera.getView() );
-        Renderer.renderMesh( cube2, gliderTex, shader, dirLight );
+        //cube2.updateUBO( camera.getProjection(), camera.getView() );
+        //Renderer.renderMesh( cube2, gliderTex, shader, dirLight );
         
-        cube3.updateUBO( camera.getProjection(), camera.getView() );
-        Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
+        //cube3.updateUBO( camera.getProjection(), camera.getView() );
+        //Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
 
         suzanne.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderMesh( suzanne, gliderTex, shader, dirLight );
 
-        lines.updateUBO( camera.getProjection(), camera.getView() );
-        Renderer.renderLines( lines, lineShader );
+        octreeLines.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderLines( octreeLines, lineShader );
 
-        //octreeLines.updateUBO( camera.getProjection(), camera.getView() );
-        //Renderer.renderLines( octreeLines, lineShader );
+        aabbLines.updateUBO( camera.getProjection(), camera.getView() );
+        Renderer.renderLines( aabbLines, lineShader );
+
+        //Renderer.drawText( "This is text", font, fontTex, 100, 70 );
 
         SDL_GL_SwapWindow( win );
+
+        /*const(char)* error = SDL_GetError();
+
+        if (*error != '\n')
+        {
+            writeln("SDL error: ", *error);
+            assert( false, "SDL error" );
+        }*/
     }
 }

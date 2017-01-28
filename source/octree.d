@@ -1,6 +1,7 @@
 import intersection;
 import renderer;
-import std.math: abs;
+import std.math: abs, cos, PI, sin, sqrt;
+import std.random: uniform;
 import std.stdio;
 import vec3;
 
@@ -39,15 +40,20 @@ private class OctreeNode
     public float distanceToSurface;
 }
 
-public Vec3 uniformSphericalSampling()
+public Vec3 uniformSphericalSampling( float u, float v )
 {
-    return Vec3( 1, 1, 1 );
+    const float phi = v * 2 * PI;
+    const float cosTheta = 1 - u;
+    const float sinTheta = sqrt( 1 - cosTheta * cosTheta );
+    return Vec3( cos( phi ) * sinTheta, sin( phi ) * sinTheta, cosTheta );
 }
 
 public class Octree
 {
-    this( Vertex[] vertices, Face[] indices, int voxelSize, int borderSize )
+    this( Vertex[] vertices, Face[] indices, float voxelSize, float borderSize )
     {
+        assert( voxelSize > 0, "voxel dimension is 0" );
+
         this.voxelSize = voxelSize;
         
         Vertex[] flattenedVertices = new Vertex[ indices.length * 3 ];
@@ -57,7 +63,9 @@ public class Octree
 
         for (int dirIndex = 0; dirIndex < 200; ++dirIndex)
         {
-            sampleDirections ~= uniformSphericalSampling();
+            float x = uniform( 0, 100 ) / 100.0f;
+            float y = uniform( 0, 100 ) / 100.0f;
+            sampleDirections ~= uniformSphericalSampling( x, y );
         }
 
         // 1. Scales the AABB to find the correct octree dimension.
@@ -76,7 +84,7 @@ public class Octree
         octreeDim = nextPowerOfTwo( cast(int)( dim.maxComponent() + borderSize ) );
         writeln("octreeDim: ", octreeDim);
 
-        int worldSize = octreeDim * voxelSize;
+        float worldSize = octreeDim * voxelSize;
         octreeOrigin = (dim / 2) - Vec3( worldSize / 2, worldSize / 2, worldSize / 2 );
         writeln("octreeOrigin: ", octreeOrigin.x, ", ", octreeOrigin.y, ", ", octreeOrigin.z );
 
@@ -86,6 +94,11 @@ public class Octree
 
         // 4. Subdivision
         rootNode = new OctreeNode();
+        rootNode.worldAabb.min = rootAABBMin;
+        rootNode.worldAabb.max = rootAABBMax;
+        rootNode.buildAabb.min = Vec3( 0, 0, 0 );
+        rootNode.buildAabb.max = Vec3( octreeDim, octreeDim, octreeDim ); 
+
         subdivide( rootNode, vertices, indices );
         const float minCoverage = 0.9f;
         updateInternalEmptyLeafsSign( rootNode, rootNode, minCoverage );
@@ -95,12 +108,18 @@ public class Octree
     {
         Vec3[] lines;
         getNodeLines( rootNode, lines );
+
+        for (int i = 0; i < lines.length; ++i)
+        {
+            writeln( i, ": ", lines[ i ].x, ", ", lines[ i ].y, ", ", lines[ i ].z );
+        }
+
         return lines;
     }
 
-    private Vec3[] getNodeLines( OctreeNode node, Vec3[] lines )
+    private Vec3[] getNodeLines( OctreeNode node, ref Vec3[] lines )
     {
-        if (node.nodeType != NodeType.EmptyLeaf)
+        if (!(node is null) && node.nodeType != NodeType.EmptyLeaf)
         {
             lines ~= node.worldAabb.getLines();
 
@@ -113,6 +132,39 @@ public class Octree
         return lines;
     }
 
+    private bool rayOctreeIntersection( Vec3 rayOrigin, Vec3 rayDirection, OctreeNode node )
+    {
+        if (node is null)
+        {
+            return false;
+        }
+
+        if (node.nodeType == NodeType.Leaf)
+        {
+            return rayBoxIntersection( rayOrigin, rayDirection, node.worldAabb );
+        }
+
+        if (node.nodeType == NodeType.Internal)
+        {
+            if (rayBoxIntersection( rayOrigin, rayDirection, node.worldAabb ))
+            {
+                for (int childIndex = 0; childIndex < 8; ++childIndex)
+                {
+                    if (rayOctreeIntersection( rayOrigin, rayDirection, node.children[ childIndex ] ))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     private void updateInternalEmptyLeafsSign( OctreeNode rootNode, OctreeNode node, float minCoverage )
     {
         if (node is null)
@@ -122,6 +174,7 @@ public class Octree
 
         if (node.nodeType == NodeType.Leaf)
         {
+            // The sign has already been updated during octree building
             return;
         }
 
@@ -140,16 +193,36 @@ public class Octree
         const int sampleDirectionsLength = 200;
         int maxMisses = sampleDirectionsLength / 4;
 
-        for (int i = 0; i < sampleDirectionsLength; ++i)
+        for (int sampleDirectionIndex = 0; sampleDirectionIndex < sampleDirectionsLength; ++sampleDirectionIndex)
         {
-        
+            Vec3 rayOrigin = node.worldAabb.getCenter();
+            Vec3 rayDirection = sampleDirections[ sampleDirectionIndex ];
+
+            if (rayOctreeIntersection( rayOrigin, rayDirection, node ))
+            {
+                ++coverage;
+            }
+            else
+            {
+                ++misses;
+            }
+
+            if (misses >= maxMisses)
+            {
+                break;
+            }
         }
+
+        const float fCoverage = coverage / cast(float)sampleDirectionsLength;
+
+        node.distanceToSurface = (fCoverage >= minCoverage) ? -1 : 1;
     }
 
     private void subdivide( OctreeNode parentNode, Vertex[] vertices, Face[] nodeTriangleIndices )
     {
         uint childIndex = 0;
         int aabbDim = cast(int)( (parentNode.buildAabb.max.x - parentNode.buildAabb.min.x) / 2 );
+        assert( aabbDim > 0, "invalid aabb dim" );
 
         for (int z = 0; z < 2; ++z)
         {
@@ -171,7 +244,8 @@ public class Octree
         {
             OctreeNode childNode = parentNode.children[ childIndex ];
             int[] childTriangleIndices;
-            
+            Face[] childTriangles;
+
             childNode.worldAabb.min = octreeOrigin + childNode.buildAabb.min * voxelSize;
             childNode.worldAabb.max = octreeOrigin + childNode.buildAabb.max * voxelSize;
 
@@ -191,35 +265,47 @@ public class Octree
                 if (triangleIntersectsAABB( triangleVertices, childNode.worldAabb ))
                 {
                     childTriangleIndices ~= faceIndex;
+                    childTriangles ~= nodeTriangleIndices[ faceIndex ];
                 }
             }
 
+            // No intersections so this child is empty
             if (childTriangleIndices.length == 0)
             {
                 childNode.nodeType = NodeType.EmptyLeaf;
+                writeln( "node: empty leaf" );
             }
             else
             {
+                // Got a leaf node
                 if (aabbDim == 1)
                 {
                     childNode.nodeType = NodeType.Leaf;
+                    writeln( "node: leaf" );
                     updateLeafNodeDistanceValue( childNode, vertices, childTriangleIndices );
                 }
                 else
                 {
                     childNode.nodeType = NodeType.Internal;
+                    writeln( "node: internal" );
 
-                    Face[] childTriangles = new Face[ childTriangleIndices.length / 3 ];
+                    /*assert( childTriangleIndices.length > 0, "invalid length" );
+
+                    Face[] childTriangles = new Face[ childTriangleIndices.length ];
                     int i = 0;
                     for (int triIndex = 0; triIndex < childTriangleIndices.length; triIndex += 3)
                     {
-                        childTriangles[ i ].a = cast(ushort)childTriangleIndices[ triIndex * 3 + 0 ];
-                        childTriangles[ i ].b = cast(ushort)childTriangleIndices[ triIndex * 3 + 1 ];
-                        childTriangles[ i ].c = cast(ushort)childTriangleIndices[ triIndex * 3 + 2 ];
+                        ushort a = cast(ushort)childTriangleIndices[ triIndex + 0 ];
+                        //ushort b = cast(ushort)childTriangleIndices[ triIndex + 1 ];
+                        //ushort c = cast(ushort)childTriangleIndices[ triIndex + 2 ];
+                        
+                        childTriangles[ i ].a = nodeTriangleIndices[ a ].a;
+                        childTriangles[ i ].b = cast(ushort)childTriangleIndices[ triIndex + 1 ];
+                        childTriangles[ i ].c = cast(ushort)childTriangleIndices[ triIndex + 2 ];
                         ++i;
-                    }
+                    }*/
 
-                    subdivide( childNode, vertices, childTriangles );
+                    //subdivide( childNode, vertices, childTriangles );
                 }
             }
         }
@@ -307,7 +393,7 @@ public class Octree
 
 unittest
 {
-    assert( nextPowerOfTwo( 1 ) == 2, "nextPowerOfTwo failed" );
-    assert( nextPowerOfTwo( 3 ) == 4, "nextPowerOfTwo failed" );
-    assert( nextPowerOfTwo( 4 ) == 8, "nextPowerOfTwo failed" );
+    assert( nextPowerOfTwo( 1 ) == 1, "nextPowerOfTwo with param 1 failed" );
+    assert( nextPowerOfTwo( 3 ) == 4, "nextPowerOfTwo with param 3 failed" );
+    assert( nextPowerOfTwo( 4 ) == 4, "nextPowerOfTwo with param 4 failed" );
 }

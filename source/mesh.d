@@ -4,6 +4,7 @@ import matrix4x4;
 import renderer;
 import std.format;
 import std.math;
+import std.regex;
 import std.stdio;
 import std.string;
 import vec3;
@@ -39,8 +40,8 @@ private class SubMesh
         for (int f = 0; f < faces.length; ++f)
         {
             Vec3 tvertex = vertices[ faces[ f ].v1 ];
-            Vec3 tnormal = normals[ faces[ f ].n1 ];
-            Vec3 ttcoord = texcoords[ faces[ f ].t1 ];
+            Vec3 tnormal = normals.length > 0 ? normals[ faces[ f ].n1 ] : Vec3( 1, 0, 0 );
+            Vec3 ttcoord = texcoords.length > 0 ? texcoords[ faces[ f ].t1 ] : Vec3( 0, 0, 0 );
 
             // Searches vertex from vertex list and adds it if not found.
 
@@ -72,8 +73,8 @@ private class SubMesh
 
             // Vertex 2
             tvertex = vertices[ faces[ f ].v2 ];
-            tnormal = normals[ faces[ f ].n2 ];
-            ttcoord = texcoords[ faces[ f ].t2 ];
+            tnormal = normals.length > 0 ? normals[ faces[ f ].n2 ] : Vec3( 1, 0, 0 );
+            ttcoord = texcoords.length > 0 ? texcoords[ faces[ f ].t2 ] : Vec3( 0, 0, 0 );
 
             found = false;
 
@@ -102,8 +103,8 @@ private class SubMesh
 
             // Vertex 3
             tvertex = vertices[ faces[ f ].v3 ];
-            tnormal = normals[ faces[ f ].n3 ];
-            ttcoord = texcoords[ faces[ f ].t3 ];
+            tnormal = normals.length > 0 ? normals[ faces[ f ].n3 ] : Vec3( 1, 0, 0 );
+            ttcoord = texcoords.length > 0 ? texcoords[ faces[ f ].t3 ] : Vec3( 0, 0, 0 );
 
             found = false;
 
@@ -170,6 +171,11 @@ public class Mesh
         glBindVertexArray( vaos[ subMeshIndex ] );
     }
 
+    public Vec3 getPosition() const
+    {
+        return this.position;
+    }
+
     public void setPosition( Vec3 position )
     {
         this.position = position;
@@ -226,6 +232,7 @@ public class Mesh
         while (!file.eof())
         {
             string line = strip( file.readln() );
+            writeln( "length ", line.length, ": ", line );
 
             if (line.length > 1 && (line[ 0 ] == 'o' || line[ 0 ] == 'g'))
             {
@@ -239,7 +246,14 @@ public class Mesh
                 string v;
                 uint items = formattedRead( line, "%s %f %f %f", &v, &vertex.x, &vertex.y, &vertex.z );
                 assert( items == 4, "parse error reading .obj file" );
+             
+                //vertex = vertex * Vec3( 0.05f, 0.05f, 0.05f );
+
                 vertices ~= vertex;
+            }
+            else if (line.length > 0 && line[ 0 ] == '#')
+            {
+                continue;
             }
             else if (line.length > 0 && line[ 0..2 ] == "vn")
             {
@@ -269,10 +283,23 @@ public class Mesh
             {
                 ObjFace face;
                 string v;
-                uint items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
+                uint items = 0;
+               
+                writeln( line );
+                auto ctr = ctRegex!(`.[0-9]+ [0-9]+ [0-9]+`);
+                auto c2 = matchFirst( line, ctr ); 
+                if (!c2.empty)
+                {
+                    items = formattedRead( line, "%s %d %d %d", &v, &face.v1, &face.v2, &face.v3 );
+                    assert( items == 4, "parse error reading .obj file" );
+                }
+                else
+                {
+                    items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
                                             &face.v2, &face.t2, &face.n2,
                                             &face.v3, &face.t3, &face.n3 );
-                assert( items == 10, "parse error reading .obj file" );
+                    assert( items == 10, "parse error reading .obj file" );
+                }
 
                 // OBJ faces are 1-indexed, convert to 0-indexed.
                 --face.v1;

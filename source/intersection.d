@@ -23,17 +23,43 @@ public struct Aabb
 
     public Vec3[] getLines() const
     {
-        Vec3[] outLines = new Vec3[ 8 ];
+        Vec3[] outLines = new Vec3[ 24 ];
 
-        // Corners
         outLines[ 0 ] = Vec3( min.x, min.y, min.z );
         outLines[ 1 ] = Vec3( max.x, min.y, min.z );
-        outLines[ 2 ] = Vec3( min.x, max.y, min.z );
-        outLines[ 3 ] = Vec3( min.x, min.y, max.z );
-        outLines[ 4 ] = Vec3( max.x, max.y, min.z );
-        outLines[ 5 ] = Vec3( min.x, max.y, max.z );
-        outLines[ 6 ] = Vec3( max.x, max.y, max.z );
-        outLines[ 7 ] = Vec3( max.x, min.y, max.z );
+
+        outLines[ 2 ] = Vec3( min.x, min.y, min.z );
+        outLines[ 3 ] = Vec3( min.x, max.y, min.z );
+
+        outLines[ 4 ] = Vec3( min.x, min.y, min.z );
+        outLines[ 5 ] = Vec3( min.x, min.y, max.z );
+
+        outLines[ 6 ] = Vec3( max.x, min.y, max.z );
+        outLines[ 7 ] = Vec3( min.x, min.y, max.z );
+
+        outLines[ 8 ] = Vec3( max.x, min.y, max.z );
+        outLines[ 9 ] = Vec3( max.x, max.y, max.z );
+
+        outLines[10 ] = Vec3( max.x, min.y, max.z );
+        outLines[11 ] = Vec3( max.x, min.y, min.z );
+
+        outLines[12 ] = Vec3( max.x, max.y, min.z );
+        outLines[13 ] = Vec3( max.x, min.y, min.z );
+
+        outLines[14 ] = Vec3( max.x, max.y, min.z );
+        outLines[15 ] = Vec3( min.x, max.y, min.z );
+
+        outLines[16 ] = Vec3( max.x, max.y, min.z );
+        outLines[17 ] = Vec3( max.x, max.y, max.z );
+
+        outLines[18 ] = Vec3( min.x, max.y, max.z );
+        outLines[19 ] = Vec3( min.x, max.y, min.z );
+
+        outLines[20 ] = Vec3( min.x, max.y, max.z );
+        outLines[21 ] = Vec3( max.x, max.y, max.z );
+
+        outLines[22 ] = Vec3( min.x, max.y, max.z );
+        outLines[23 ] = Vec3( min.x, min.y, max.z );
 
         return outLines;
     }
@@ -45,6 +71,30 @@ public struct Aabb
 public float saturate( float a )
 {
     return fmax( 0, fmin( a, 1 ) );
+}
+
+public bool rayBoxIntersection( Vec3 rayOrigin, Vec3 rayDirection, Aabb aabb )
+{
+	float l1   = (aabb.min.x - rayOrigin.x) * (1.0f / rayDirection.x);
+	float l2   = (aabb.max.x - rayOrigin.x) * (1.0f / rayDirection.x);
+
+	float tmin = fmin( l1, l2 );
+	float tmax = fmax( l1, l2 );
+
+	l1   = (aabb.min.y - rayOrigin.y) * (1.0f / rayDirection.y);
+	l2   = (aabb.max.y - rayOrigin.y) * (1.0f / rayDirection.y);
+
+	tmin = fmax( fmin( l1, l2 ), tmin );
+	tmax = fmin( fmax( l1, l2 ), tmax );
+
+	l1   = (aabb.min.z - rayOrigin.z) * (1.0f / rayDirection.z);
+	l2   = (aabb.max.z - rayOrigin.z) * (1.0f / rayDirection.z);
+
+	tmin = fmax( fmin( l1, l2 ), tmin );
+	tmax = fmin( fmax( l1, l2 ), tmax );
+	tmin = fmax( 0.0f, tmin );
+
+	return tmax > tmin;
 }
 
 public Vec3 closestPointOnTriangle( Vec3[ 3 ] triangleVerts, Aabb nodeWorldAabb, Vec3 pos )
@@ -494,8 +544,49 @@ public bool triBoxOverlap( Vec3 boxCenter, Vec3 boxHalfSize, Vec3[] triVerts )
 
 unittest
 {
-// closestPointOnTriangle
-// triangleIntersectsAABB
-// planeBoxOverlap
-// triBoxOverlap
+    // triBoxOverlap
+
+    // closestPointOnTriangle
+
+    // triangleIntersectsAABB
+
+    // planeBoxOverlap
+    {
+        immutable int[] expectedResults = [ 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0 ];
+
+        float[ 3 ] normal;
+        float[ 3 ] vert;
+        float[ 3 ] maxbox;
+
+        float[ 5 ] vertValues = [ -1, 0, 1, 2, 7 ];
+        float[ 5 ] maxValues = [ -1, 0, 1, 2, 7 ];
+        float[ 3 ] normalValues = [ -1, 0, 1 ];
+
+        int i = 0;
+
+        for (int m = 0; m < 5; ++m)
+        {
+            for (int v = 0; v < 5; ++v)
+            {
+                for (int n = 0; n < 3; ++n)
+                {
+                    normal[ 0 ] = normalValues[ n ];
+                    normal[ 1 ] = normalValues[ (n + 1) % 3 ];
+                    normal[ 2 ] = normalValues[ (n + 2) % 3 ];
+
+                    vert[ 0 ] = vertValues[ v ];
+                    vert[ 1 ] = vertValues[ 4 - v ];
+                    vert[ 2 ] = vertValues[ v ];
+
+                    maxbox[ 0 ] = maxValues[ 4 - m ];
+                    maxbox[ 1 ] = maxValues[ m ];
+                    maxbox[ 2 ] = maxValues[ 4 - m ];
+
+                    int res = planeBoxOverlap( Vec3( normal[ 0 ], normal[ 1 ], normal[ 2 ] ), Vec3( vert[ 0 ], vert[ 1 ], vert[ 2 ] ), Vec3( maxbox[ 0 ], maxbox[ 1 ], maxbox[ 2 ] ) ) ? 1 : 0;
+                    assert( res == expectedResults[ i ], "PlaneBoxOverlap test failed" );
+                    ++i;
+                }
+            }
+        }
+    }
 }
