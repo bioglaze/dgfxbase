@@ -58,8 +58,20 @@ void transformPoint( Vec3 vec, Matrix4x4 mat, out Vec3 vOut )
     vOut.z = mat.m[2] * vec.x + mat.m[ 6 ] * vec.y + mat.m[10] * vec.z + mat.m[14];
 }
 
+void transformDirection( Vec3 dir, Matrix4x4 mat, out Vec3 vOut )
+{
+    vOut.x = mat.m[0] * dir.x + mat.m[ 4 ] * dir.y + mat.m[ 8] * dir.z;
+    vOut.y = mat.m[1] * dir.x + mat.m[ 5 ] * dir.y + mat.m[ 9] * dir.z;
+    vOut.z = mat.m[2] * dir.x + mat.m[ 6 ] * dir.y + mat.m[10] * dir.z;
+}
+
 public align(16) struct Matrix4x4
 {
+    this( float xDeg, float yDeg, float zDeg )
+    {
+        makeRotationXYZ( xDeg, yDeg, zDeg );
+    }
+
     string toString() const
     {
         return format( "%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n",

@@ -1,4 +1,6 @@
 import matrix4x4;
+import std.math: approxEqual;
+import quaternion;
 import vec3;
 
 public class Camera
@@ -16,7 +18,60 @@ public class Camera
 
     public void lookAt( Vec3 eyePosition, Vec3 center )
     {
+        Matrix4x4 lookAt;
+        lookAt.makeLookAt( eyePosition, center, Vec3( 0, 1, 0 ) );
+        rotation.fromMatrix( lookAt );
+        position = eyePosition;
+
         viewMatrix.makeLookAt( eyePosition, center, Vec3( 0, 1, 0 ) );
+    }
+
+    public void moveRight( float amount )
+    {
+        if (!approxEqual( amount, 0 ))
+        {
+            position = position + rotation * Vec3( amount, 0, 0 );
+        }
+    }
+
+    public void moveUp( float amount )
+    {
+        position.y += amount;
+    }
+
+    public void moveForward( float amount )
+    {
+        if (!approxEqual( amount, 0 ))
+        {
+            position = position + rotation * Vec3( 0, 0, amount );
+        }
+    }
+
+    public void offsetRotate( Vec3 axis, float angleDegrees )
+    {
+        Quaternion rot;
+        rot.fromAxisAngle( axis, angleDegrees );
+
+        Quaternion newRotation;
+
+        if (approxEqual( axis.y, 0 ))
+        {
+            newRotation = rotation * rot;
+        }
+        else
+        {
+            newRotation = rot * rotation;
+        }
+
+        newRotation.normalize();
+
+        if ((approxEqual( axis.x, 1 ) || approxEqual( axis.x, -1 )) && approxEqual( axis.y, 0 ) && approxEqual( axis.z, 0 ) &&
+            newRotation.findTwist( Vec3( 1.0f, 0.0f, 0.0f ) ) > 0.9999f)
+        {
+            return;
+        }
+
+        rotation = newRotation;
     }
 
     public Matrix4x4 getProjection() const
@@ -35,4 +90,6 @@ public class Camera
     private float far = 300;
     private Matrix4x4 viewMatrix;
     private Matrix4x4 projectionMatrix;
+    Vec3 position;
+    Quaternion rotation;
 }

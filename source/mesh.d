@@ -11,9 +11,9 @@ import vec3;
 
 private struct ObjFace
 {
-    ushort v1, v2, v3;
-    ushort t1, t2, t3;
-    ushort n1, n2, n3;
+    uint v1, v2, v3;
+    uint t1, t2, t3;
+    uint n1, n2, n3;
 }
 
 private class SubMesh
@@ -176,6 +176,11 @@ public class Mesh
         return this.position;
     }
 
+    public float getScale() const
+    {
+        return this.scale;
+    }
+
     public void setPosition( Vec3 position )
     {
         this.position = position;
@@ -186,7 +191,7 @@ public class Mesh
         this.scale = scale;
     }
 
-    public void updateUBO( Matrix4x4 projection, Matrix4x4 view )
+    public void updateUBO( Matrix4x4 projection, Matrix4x4 view, int textureHandle )
     {
         Matrix4x4 mvp;
         mvp.makeIdentity();
@@ -200,6 +205,7 @@ public class Mesh
         uboStruct.modelToView = mvp;
         multiply( mvp, projection, mvp );
         uboStruct.modelToClip = mvp;
+        uboStruct.textureHandle = textureHandle;
 
         GLvoid* mappedMem = glMapNamedBuffer( ubo, GL_WRITE_ONLY );
         memcpy( mappedMem, &uboStruct, PerObjectUBO.sizeof );
@@ -293,7 +299,7 @@ public class Mesh
                     items = formattedRead( line, "%s %d %d %d", &v, &face.v1, &face.v2, &face.v3 );
                     assert( items == 4, "parse error reading .obj file" );
                 }
-                else
+                else if (!line.empty)
                 {
                     items = formattedRead( line, "%s %d/%d/%d %d/%d/%d %d/%d/%d", &v, &face.v1, &face.t1, &face.n1,
                                             &face.v2, &face.t2, &face.n2,

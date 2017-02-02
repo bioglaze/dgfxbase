@@ -56,11 +56,13 @@ void main()
     Renderer.initGL();
 
     SDL_GL_SetSwapInterval( 1 );
-    
+    SDL_SetWindowTitle( win, "DGFXBase" );
+
     Mesh cube = new Mesh( "assets/cube.obj" );
     Mesh cube1 = new Mesh( "assets/cube.obj" );
     Mesh cube2 = new Mesh( "assets/cube.obj" );
     Mesh cube3 = new Mesh( "assets/cube.obj" );
+    //Mesh sponza = new Mesh( "assets/sponza2.obj" );
     Mesh suzanne = new Mesh( "assets/suzanne.obj" );
     //Mesh suzanne = new Mesh( "assets/armadillo.obj" );
 
@@ -79,13 +81,17 @@ void main()
     Camera camera = new Camera();
     camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
-    float camZ = 0;
 
+    Font font = new Font( "assets/font.bin" );
+    
+    Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
     GLuint64[ 10 ] textures;
     textures[ 0 ] = gliderTex.getHandle64();
+    textures[ 1 ] = fontTex.getHandle64();
     gliderTex.makeResident();
+    fontTex.makeResident();
 
     Renderer.updateTextureUbo( textures );
 
@@ -98,7 +104,7 @@ void main()
 
     for (int lineIndex = 0; lineIndex < suzanneLinesModelSpace.length; ++lineIndex)
     {
-        suzanneLinesWorldSpace ~= suzanneLinesModelSpace[ lineIndex ] + suzanne.getPosition();
+        suzanneLinesWorldSpace ~= suzanneLinesModelSpace[ lineIndex ] * suzanne.getScale() + suzanne.getPosition();
     }
 
     Lines octreeLines = new Lines( suzanneLinesWorldSpace );
@@ -113,9 +119,6 @@ void main()
     testAabb.max.y =  1 + aabbPos.y;
     testAabb.max.z =  1 + aabbPos.z;
     Lines aabbLines = new Lines( testAabb.getLines() );
-
-    Font font = new Font( "assets/font.bin" );
-    Texture fontTex = new Texture( "assets/font.tga" );
 
     bool grabMouse = false;
 
@@ -142,26 +145,40 @@ void main()
             }
             else if (e.type == SDL_MOUSEMOTION)
             {
-            
             }
             else if (e.type == SDL_MOUSEWHEEL)
             {
-                camZ += (e.wheel.y > 0) ? -1 : 1;
-                writeln( "camZ: ", camZ );
-                camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
+                camera.moveForward( (e.wheel.y > 0) ? -1 : 1 );
+                //camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
             }
             else if (e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDLK_w)
+                if (e.key.keysym.sym == SDLK_LEFT)
                 {
-                    camZ += 0.1f;
+                    camera.offsetRotate( Vec3( 0, 1, 0 ), 1 );
+                }
+                else if (e.key.keysym.sym == SDLK_RIGHT)
+                {
+                    camera.offsetRotate( Vec3( 0, 1, 0 ), -1 );
+                }
+                else if (e.key.keysym.sym == SDLK_w)
+                {
+                    camera.moveForward( 1 );
                 }
                 else if (e.key.keysym.sym == SDLK_s)
                 {
-                    camZ -= 0.1f;
+                    camera.moveForward( -1 );
+                }
+                else if (e.key.keysym.sym == SDLK_a)
+                {
+                    camera.moveRight( -1 );
+                }
+                else if (e.key.keysym.sym == SDLK_d)
+                {
+                    camera.moveRight( 1 );
                 }
 
-                camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
+                //camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
             }
             else if (e.type == SDL_QUIT)
             {
@@ -171,7 +188,7 @@ void main()
 
         Renderer.clearScreen();
         
-        cube.updateUBO( camera.getProjection(), camera.getView() );
+        cube.updateUBO( camera.getProjection(), camera.getView(), 0 );
         Renderer.renderMesh( cube, gliderTex, shader, dirLight );
 
         //cube1.updateUBO( camera.getProjection(), camera.getView() );
@@ -183,7 +200,7 @@ void main()
         //cube3.updateUBO( camera.getProjection(), camera.getView() );
         //Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
 
-        suzanne.updateUBO( camera.getProjection(), camera.getView() );
+        suzanne.updateUBO( camera.getProjection(), camera.getView(), 1 );
         Renderer.renderMesh( suzanne, gliderTex, shader, dirLight );
 
         octreeLines.updateUBO( camera.getProjection(), camera.getView() );
@@ -192,7 +209,7 @@ void main()
         aabbLines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( aabbLines, lineShader );
 
-        //Renderer.drawText( "This is text", font, fontTex, 100, 70 );
+        Renderer.drawText( "This is text", shader, font, fontTex, 100, 70 );
 
         SDL_GL_SwapWindow( win );
 

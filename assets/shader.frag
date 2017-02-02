@@ -3,6 +3,13 @@
 
 //layout(binding=0) uniform sampler2D sTexture;
 
+layout(std140, binding=0) uniform PerObject
+{
+    mat4 modelToClip;
+    mat4 modelToView;
+    int textureHandle;
+};
+
 layout(std140, binding=1) uniform LightUbo
 {
     vec3 lightDirectionVS;
@@ -23,6 +30,6 @@ void main()
     vec2 uv = vUV;
     uv.y = 1.0 - uv.y;
     //fragColor = texture( sTexture, uv ) * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
-    fragColor = texture( samplers[ 0 ], uv ) * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
+    fragColor = texture( samplers[ textureHandle ], uv ) * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
 }
 

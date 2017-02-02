@@ -47,6 +47,13 @@ struct Vec3
         {
             return Vec3( x + v.x, y + v.y, z + v.z );
         }
+        else static if (op == "+=")
+        {
+            x += v.x;
+            y += v.y;
+            z += v.z;
+            return this;
+        }
         else static if (op == "-")
         {
             return Vec3( x - v.x, y - v.y, z - v.z );

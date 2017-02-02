@@ -1,6 +1,6 @@
 import core.stdc.string;
 import derelict.opengl3.gl3;
-//import Font;
+import Font;
 import matrix4x4;
 import mesh;
 import shader;
@@ -96,6 +96,7 @@ public align(1) struct PerObjectUBO
 {
     Matrix4x4 modelToClip;
     Matrix4x4 modelToView;
+    int textureHandle;
 }
 
 public align(1) struct TextureUBO
@@ -190,9 +191,9 @@ public abstract class Renderer
         glNamedBufferStorage( textureUbo, TextureUBO.sizeof, &textureUboStruct, flags );
     }
 
-    /*public static void drawText( string text, Font font, Texture fontTex, float x, float y )
+    public static void drawText( string text, Shader shader, Font font, Texture fontTex, float x, float y )
     {
-        if (text != cachedText)
+        /*if (text != cachedText)
         {     
             Vertex[] vertices;
             Face[] faces;
@@ -203,19 +204,20 @@ public abstract class Renderer
             textFaceLength = cast(int)faces.length;
         }
 
-        fontTex.Bind();
+        // TODO: bindless
+        fontTex.bind( 0 );
 
-        shader.Use();
+        shader.use();
 
         Matrix4x4 mvp;
-        mvp.MakeIdentity();
-        //mvp.Scale( xScale, yScale, 1 );
-        mvp.Translate( Vec3.Vec3( x, y, 0 ) );
-        Matrix4x4.Multiply( mvp, orthoMat, mvp );
-        shader.SetMatrix44( "mvp", mvp.m );
+        mvp.makeIdentity();
+        //mvp.scale( xScale, yScale, 1 );
+        mvp.translate( Vec3( x, y, 0 ) );
+        multiply( mvp, orthoMat, mvp );
+        shader.setMatrix44( "mvp", mvp.m );
 
-        drawVAO( textVAO, textFaceLength * 3, [ 1, 1, 1, 1 ] );
-    }*/
+        drawVAO( textVAO, textFaceLength * 3, [ 1, 1, 1, 1 ] );*/
+    }
 
     private static void updateLightUbo( Vec3 lightDirectionInView )
     {
@@ -304,4 +306,6 @@ public abstract class Renderer
     private static TextureUBO textureUboStruct;
     private static uint textureUbo;
     private static uint textVao;
+    private static string cachedText;
+    private static int textFaceLength;
 }

@@ -8,6 +8,7 @@ layout(std140, binding=0) uniform PerObject
 {
     mat4 modelToClip;
     mat4 modelToView;
+    int textureHandle;
 };
 
 out vec2 vUV;
