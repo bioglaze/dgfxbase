@@ -136,6 +136,36 @@ struct Quaternion
         w *= factor;
     }
 
+    public void getMatrix( out Matrix4x4 outMatrix )
+    {
+        const float x2 = x * x;
+        const float y2 = y * y;
+        const float z2 = z * z;
+        const float xy = x * y;
+        const float xz = x * z;
+        const float yz = y * z;
+        const float wx = w * x;
+        const float wy = w * y;
+        const float wz = w * z;
+
+        outMatrix.m[ 0] = 1 - 2 * (y2 + z2);
+        outMatrix.m[ 1] = 2 * (xy - wz);
+        outMatrix.m[ 2] = 2 * (xz + wy);
+        outMatrix.m[ 3] = 0;
+        outMatrix.m[ 4] = 2 * (xy + wz);
+        outMatrix.m[ 5] = 1 - 2 * (x2 + z2);
+        outMatrix.m[ 6] = 2 * (yz - wx);
+        outMatrix.m[ 7] = 0;
+        outMatrix.m[ 8] = 2 * (xz - wy);
+        outMatrix.m[ 9] = 2 * (yz + wx);
+        outMatrix.m[10] = 1 - 2 * (x2 + y2);
+        outMatrix.m[11] = 0;
+        outMatrix.m[12] = 0;
+        outMatrix.m[13] = 0;
+        outMatrix.m[14] = 0;
+        outMatrix.m[15] = 1;
+    }
+
     private void findOrthonormals( out Vec3 normal, out Vec3 orthonormal1, out Vec3 orthonormal2 ) const
     {
         Matrix4x4 orthoX = Matrix4x4( 90,  0, 0 );

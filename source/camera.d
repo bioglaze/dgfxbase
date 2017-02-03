@@ -74,6 +74,13 @@ public class Camera
         rotation = newRotation;
     }
 
+    public void updateMatrix()
+    {
+        rotation.getMatrix( viewMatrix );
+        viewMatrix.scale( 1, 1, 1 );
+        viewMatrix.translate( position );
+    }
+
     public Matrix4x4 getProjection() const
     {
         return projectionMatrix;

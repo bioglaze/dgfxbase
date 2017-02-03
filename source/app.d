@@ -63,8 +63,7 @@ void main()
     Mesh cube2 = new Mesh( "assets/cube.obj" );
     Mesh cube3 = new Mesh( "assets/cube.obj" );
     //Mesh sponza = new Mesh( "assets/sponza2.obj" );
-    Mesh suzanne = new Mesh( "assets/suzanne.obj" );
-    //Mesh suzanne = new Mesh( "assets/armadillo.obj" );
+    Mesh armadillo = new Mesh( "assets/armadillo.obj" );
 
     const float xoff = -4;
     const float yoff = 4;
@@ -72,8 +71,8 @@ void main()
     cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
     cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
     cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
-    suzanne.setPosition( Vec3( 0 + xoff, -5 + yoff, -15 ) );
-    //suzanne.setScale( 0.05f );
+    armadillo.setPosition( Vec3( 0 + xoff, -5 + yoff, -15 ) );
+    //armadillo.setScale( 0.05f );
     
     Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
@@ -81,6 +80,7 @@ void main()
     Camera camera = new Camera();
     camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
+    camera.moveForward( -200 );
 
     Font font = new Font( "assets/font.bin" );
     
@@ -97,17 +97,17 @@ void main()
 
     DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
 
-    Octree octree = new Octree( suzanne.getSubMeshVertices( 0 ), suzanne.getSubMeshIndices( 0 ), 1.0f, 0.9f );
+    Octree octree = new Octree( armadillo.getSubMeshVertices( 0 ), armadillo.getSubMeshIndices( 0 ), 2.0f, 0.9f );
     
-    Vec3[] suzanneLinesModelSpace = octree.getLines();
-    Vec3[] suzanneLinesWorldSpace;
+    Vec3[] armadilloLinesModelSpace = octree.getLines();
+    Vec3[] armadilloLinesWorldSpace;
 
-    for (int lineIndex = 0; lineIndex < suzanneLinesModelSpace.length; ++lineIndex)
+    for (int lineIndex = 0; lineIndex < armadilloLinesModelSpace.length; ++lineIndex)
     {
-        suzanneLinesWorldSpace ~= suzanneLinesModelSpace[ lineIndex ] * suzanne.getScale() + suzanne.getPosition();
+        armadilloLinesWorldSpace ~= armadilloLinesModelSpace[ lineIndex ] * armadillo.getScale() + armadillo.getPosition();
     }
 
-    Lines octreeLines = new Lines( suzanneLinesWorldSpace );
+    Lines octreeLines = new Lines( armadilloLinesWorldSpace );
 
     Vec3 aabbPos = Vec3( 5, 5, -22 );
 
@@ -153,7 +153,11 @@ void main()
             }
             else if (e.type == SDL_KEYDOWN)
             {
-                if (e.key.keysym.sym == SDLK_LEFT)
+                if (e.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    return;
+                }
+                else if (e.key.keysym.sym == SDLK_LEFT)
                 {
                     camera.offsetRotate( Vec3( 0, 1, 0 ), 1 );
                 }
@@ -171,20 +175,28 @@ void main()
                 }
                 else if (e.key.keysym.sym == SDLK_a)
                 {
-                    camera.moveRight( -1 );
+                    camera.moveRight( 1 );
                 }
                 else if (e.key.keysym.sym == SDLK_d)
                 {
-                    camera.moveRight( 1 );
+                    camera.moveRight( -1 );
                 }
-
-                //camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
+                else if (e.key.keysym.sym == SDLK_e)
+                {
+                    camera.moveUp( 1 );
+                }
+                else if (e.key.keysym.sym == SDLK_q)
+                {
+                    camera.moveUp( -1 );
+                }
             }
             else if (e.type == SDL_QUIT)
             {
                 return;
             }
         }
+
+        camera.updateMatrix();
 
         Renderer.clearScreen();
         
@@ -200,8 +212,8 @@ void main()
         //cube3.updateUBO( camera.getProjection(), camera.getView() );
         //Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
 
-        suzanne.updateUBO( camera.getProjection(), camera.getView(), 1 );
-        Renderer.renderMesh( suzanne, gliderTex, shader, dirLight );
+        armadillo.updateUBO( camera.getProjection(), camera.getView(), 1 );
+        Renderer.renderMesh( armadillo, gliderTex, shader, dirLight );
 
         octreeLines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( octreeLines, lineShader );

@@ -63,7 +63,7 @@ public class Octree
 
         for (int dirIndex = 0; dirIndex < 200; ++dirIndex)
         {
-            float x = uniform( 0, 100 ) / 100.0f;
+            float x = dirIndex / 200.0f;//uniform( 0, 100 ) / 100.0f;
             float y = uniform( 0, 100 ) / 100.0f;
             sampleDirections ~= uniformSphericalSampling( x, y );
         }
@@ -108,11 +108,6 @@ public class Octree
     {
         Vec3[] lines;
         getNodeLines( rootNode, lines );
-
-        for (int i = 0; i < lines.length; ++i)
-        {
-            writeln( i, ": ", lines[ i ].x, ", ", lines[ i ].y, ", ", lines[ i ].z );
-        }
 
         return lines;
     }
@@ -288,24 +283,7 @@ public class Octree
                 {
                     childNode.nodeType = NodeType.Internal;
                     writeln( "node: internal" );
-
-                    /*assert( childTriangleIndices.length > 0, "invalid length" );
-
-                    Face[] childTriangles = new Face[ childTriangleIndices.length ];
-                    int i = 0;
-                    for (int triIndex = 0; triIndex < childTriangleIndices.length; triIndex += 3)
-                    {
-                        ushort a = cast(ushort)childTriangleIndices[ triIndex + 0 ];
-                        //ushort b = cast(ushort)childTriangleIndices[ triIndex + 1 ];
-                        //ushort c = cast(ushort)childTriangleIndices[ triIndex + 2 ];
-                        
-                        childTriangles[ i ].a = nodeTriangleIndices[ a ].a;
-                        childTriangles[ i ].b = cast(ushort)childTriangleIndices[ triIndex + 1 ];
-                        childTriangles[ i ].c = cast(ushort)childTriangleIndices[ triIndex + 2 ];
-                        ++i;
-                    }*/
-
-                    //subdivide( childNode, vertices, childTriangles );
+                    subdivide( childNode, vertices, childTriangles );
                 }
             }
         }

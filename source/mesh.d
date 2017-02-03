@@ -238,13 +238,13 @@ public class Mesh
         while (!file.eof())
         {
             string line = strip( file.readln() );
-            writeln( "length ", line.length, ": ", line );
+            //writeln( "length ", line.length, ": ", line );
 
             if (line.length > 1 && (line[ 0 ] == 'o' || line[ 0 ] == 'g'))
             {
                 string o, name;
                 uint items = formattedRead( line, "%s %s", &o, &name );
-                writeln("name: ", name);
+                //writeln("name: ", name);
             }
             else if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
             {
@@ -291,7 +291,6 @@ public class Mesh
                 string v;
                 uint items = 0;
                
-                writeln( line );
                 auto ctr = ctRegex!(`.[0-9]+ [0-9]+ [0-9]+`);
                 auto c2 = matchFirst( line, ctr ); 
                 if (!c2.empty)
@@ -338,6 +337,6 @@ public class Mesh
     private PerObjectUBO uboStruct;
     private float testRotation = 0;
     private SubMesh[] subMeshes;
-    private Vec3 position;
+    private Vec3 position = Vec3( 0, 0, 0 );
     private float scale = 1;
 }
