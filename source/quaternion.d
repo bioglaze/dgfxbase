@@ -193,4 +193,26 @@ struct Quaternion
 
 unittest
 {
+    Quaternion q = Quaternion( Vec3( 2.5f, -1.3f, -5.2f ), 1.8f );
+    q.normalize();
+
+    assert( approxEqual( q.x, 0.404385f ) &&
+            approxEqual( q.y, -0.21028f ) &&
+            approxEqual( q.z, -0.84112f ) &&
+            approxEqual( q.w, 0.291157f ) );
+}
+
+unittest
+{
+    const Quaternion q1 = Quaternion( Vec3( 2.5f, -1.3f, -5.2f ), 1.0f );
+    const Quaternion q2 = Quaternion( Vec3( 5.4f, 2.6f, 6.7f ), 1.0f );
+
+    const Quaternion result = q1 * q2;
+
+    const float acceptableDelta = 0.00001f;
+
+    assert( !(result.w - 25.72f > acceptableDelta ||
+                 result.x - 12.71f > acceptableDelta ||
+                result.y + 43.53f > acceptableDelta ||
+                result.z - 15.02f > acceptableDelta ));
 }

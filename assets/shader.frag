@@ -30,6 +30,6 @@ void main()
     vec2 uv = vUV;
     uv.y = 1.0 - uv.y;
     //fragColor = texture( sTexture, uv ) * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
-    fragColor = texture( samplers[ textureHandle ], uv ) * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
+    fragColor = texture( samplers[ textureHandle ], uv );// * max( 0.2, dot( lightDirectionVS, vNormalVS ) );
 }
 

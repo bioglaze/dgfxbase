@@ -65,20 +65,25 @@ public class Camera
 
         newRotation.normalize();
 
+        /*Vec3 vx = Vec3( 1.0f, 0.0f, 0.0f );
+
         if ((approxEqual( axis.x, 1 ) || approxEqual( axis.x, -1 )) && approxEqual( axis.y, 0 ) && approxEqual( axis.z, 0 ) &&
-            newRotation.findTwist( Vec3( 1.0f, 0.0f, 0.0f ) ) > 0.9999f)
+            newRotation.findTwist( vx ) > 0.9999f)
         {
             return;
-        }
+        }*/
 
         rotation = newRotation;
     }
 
     public void updateMatrix()
     {
-        rotation.getMatrix( viewMatrix );
-        viewMatrix.scale( 1, 1, 1 );
+        viewMatrix.makeIdentity();
         viewMatrix.translate( position );
+
+        Matrix4x4 rotMatrix;
+        rotation.getMatrix( rotMatrix );
+        multiply( viewMatrix, rotMatrix, viewMatrix );
     }
 
     public Matrix4x4 getProjection() const

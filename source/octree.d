@@ -63,7 +63,7 @@ public class Octree
 
         for (int dirIndex = 0; dirIndex < 200; ++dirIndex)
         {
-            float x = dirIndex / 200.0f;//uniform( 0, 100 ) / 100.0f;
+            float x = dirIndex / 200.0f;
             float y = uniform( 0, 100 ) / 100.0f;
             sampleDirections ~= uniformSphericalSampling( x, y );
         }
@@ -115,6 +115,8 @@ public class Octree
     private Vec3[] getNodeLines( OctreeNode node, ref Vec3[] lines )
     {
         if (!(node is null) && node.nodeType != NodeType.EmptyLeaf)
+        //if (!(node is null) && node.nodeType != NodeType.Leaf)
+        //if (!(node is null) && node.nodeType != NodeType.Internal)
         {
             lines ~= node.worldAabb.getLines();
 
@@ -268,7 +270,7 @@ public class Octree
             if (childTriangleIndices.length == 0)
             {
                 childNode.nodeType = NodeType.EmptyLeaf;
-                writeln( "node: empty leaf" );
+                //writeln( "node: empty leaf" );
             }
             else
             {
@@ -276,20 +278,20 @@ public class Octree
                 if (aabbDim == 1)
                 {
                     childNode.nodeType = NodeType.Leaf;
-                    writeln( "node: leaf" );
+                    //writeln( "node: leaf" );
                     updateLeafNodeDistanceValue( childNode, vertices, childTriangleIndices );
                 }
                 else
                 {
                     childNode.nodeType = NodeType.Internal;
-                    writeln( "node: internal" );
+                    //writeln( "node: internal" );
                     subdivide( childNode, vertices, childTriangles );
                 }
             }
         }
     }
 
-    private void updateLeafNodeDistanceValue( OctreeNode leafNode, Vertex[] vertices, int[] faces )
+    private void updateLeafNodeDistanceValue( OctreeNode leafNode, Vertex[] vertices, int[] faces ) @nogc
     {
         float minDistance = float.max;
 

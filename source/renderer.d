@@ -166,7 +166,7 @@ public class Lines
 
 public abstract class Renderer
 {
-    public static void initGL()
+    public static void initGL( int screenWidth, int screenHeight )
     {
         Texture.loadExtensionFunctions();
         Shader.loadExtensionFunctions();
@@ -189,11 +189,16 @@ public abstract class Renderer
 
         glCreateBuffers( 1, &textureUbo );
         glNamedBufferStorage( textureUbo, TextureUBO.sizeof, &textureUboStruct, flags );
+
+        glCreateBuffers( 1, &textUbo );
+        glNamedBufferStorage( textUbo, PerObjectUBO.sizeof, &textUboStruct, flags );
+
+        orthoMat.makeProjection( 0, screenWidth, screenHeight, 0, -1, 1 );
     }
 
     public static void drawText( string text, Shader shader, Font font, Texture fontTex, float x, float y )
     {
-        /*if (text != cachedText)
+        if (text != cachedText)
         {     
             Vertex[] vertices;
             Face[] faces;
@@ -204,9 +209,6 @@ public abstract class Renderer
             textFaceLength = cast(int)faces.length;
         }
 
-        // TODO: bindless
-        fontTex.bind( 0 );
-
         shader.use();
 
         Matrix4x4 mvp;
@@ -214,9 +216,9 @@ public abstract class Renderer
         //mvp.scale( xScale, yScale, 1 );
         mvp.translate( Vec3( x, y, 0 ) );
         multiply( mvp, orthoMat, mvp );
-        shader.setMatrix44( "mvp", mvp.m );
+        updateTextUbo( mvp );
 
-        drawVAO( textVAO, textFaceLength * 3, [ 1, 1, 1, 1 ] );*/
+        renderVAO( textVao, textFaceLength * 3, [ 1, 1, 1, 1 ] );
     }
 
     private static void updateLightUbo( Vec3 lightDirectionInView )
@@ -233,12 +235,26 @@ public abstract class Renderer
     public static void updateTextureUbo( GLuint64[ 10 ] textures )
 	{
 		textureUboStruct.textures = textures;
+        //writeln("0: ", textureUboStruct.textures[0]);
+        //writeln("1: ", textureUboStruct.textures[1]);
 
 		GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
 		memcpy( mappedMem, &textureUboStruct, TextureUBO.sizeof );
         glUnmapNamedBuffer( textureUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 2, textureUbo );
+	}
+
+    public static void updateTextUbo( Matrix4x4 mvp )
+	{
+        textUboStruct.modelToClip = mvp;
+        textUboStruct.textureHandle = 0;
+
+        GLvoid* mappedMem = glMapNamedBuffer( textUbo, GL_WRITE_ONLY );
+        memcpy( mappedMem, &textUboStruct, PerObjectUBO.sizeof );
+        glUnmapNamedBuffer( textUbo );
+
+        glBindBufferBase( GL_UNIFORM_BUFFER, 0, textUbo );
 	}
 
     public static void clearScreen()
@@ -253,14 +269,19 @@ public abstract class Renderer
         glDrawArrays( GL_LINES, 0, lines.getElementCount() * 2 );
     }
 
-    public static void renderMesh( Mesh mesh, Texture texture, Shader shader, DirectionalLight light )
+    public static void renderVAO( uint vaoID, int elementCount, float[ 4 ] tintColor )
+    {
+        glBindVertexArray( vaoID );
+        glDrawElements( GL_TRIANGLES, elementCount, GL_UNSIGNED_SHORT, cast(GLvoid*)0 );
+    }
+
+    public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light )
     {
         updateLightUbo( Vec3( 0, 1, 0 ) );
 
         for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
         {
             mesh.bind( subMeshIndex );
-            texture.bind( 0 );
             shader.use();
             glDrawElements( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_SHORT, null );
         }
@@ -305,7 +326,10 @@ public abstract class Renderer
     private static uint lightUbo;
     private static TextureUBO textureUboStruct;
     private static uint textureUbo;
+    private static PerObjectUBO textUboStruct;
+    private static uint textUbo;
     private static uint textVao;
     private static string cachedText;
     private static int textFaceLength;
+    private static Matrix4x4 orthoMat;
 }

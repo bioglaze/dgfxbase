@@ -1,13 +1,13 @@
 import std.math: abs, approxEqual, sqrt;
 
-public Vec3 cross( Vec3 v1, Vec3 v2 )
+public Vec3 cross( Vec3 v1, Vec3 v2 ) @nogc
 {
     return Vec3( v1.y * v2.z - v1.z * v2.y,
                  v1.z * v2.x - v1.x * v2.z,
                  v1.x * v2.y - v1.y * v2.x );
 }
 
-public float dot( Vec3 v1, Vec3 v2 )
+public float dot( Vec3 v1, Vec3 v2 ) @nogc
 {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; 
 }
@@ -22,7 +22,7 @@ public void normalize( ref Vec3 v )
     v.z /= len;
 }
 
-public float length( ref Vec3 v )
+public float length( ref Vec3 v ) @nogc
 {
     return sqrt( v.x * v.x + v.y * v.y + v.z * v.z );
 }
@@ -34,7 +34,7 @@ private bool isAlmost( Vec3 v1, Vec3 v2 )
 
 struct Vec3
 {
-    this( float ax, float ay, float az )
+    this( float ax, float ay, float az ) @nogc
     {
         x = ax;
         y = ay;

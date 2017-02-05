@@ -11,7 +11,7 @@ public struct Aabb
         this.max = max;
     }
 
-    public Vec3 getCenter() const
+    public Vec3 getCenter() const @nogc
     {
         return (min + max) / 2;
     }
@@ -68,7 +68,7 @@ public struct Aabb
     public Vec3 max;
 }
 
-public float saturate( float a )
+public float saturate( float a ) @nogc
 {
     return fmax( 0, fmin( a, 1 ) );
 }
@@ -97,7 +97,7 @@ public bool rayBoxIntersection( Vec3 rayOrigin, Vec3 rayDirection, Aabb aabb )
 	return tmax > tmin;
 }
 
-public Vec3 closestPointOnTriangle( Vec3[ 3 ] triangleVerts, Aabb nodeWorldAabb, Vec3 pos )
+public Vec3 closestPointOnTriangle( Vec3[ 3 ] triangleVerts, Aabb nodeWorldAabb, Vec3 pos ) @nogc
 {
     const Vec3 edge0 = triangleVerts[ 1 ] - triangleVerts[ 0 ];
     const Vec3 edge1 = triangleVerts[ 2 ] - triangleVerts[ 0 ];

@@ -9,6 +9,7 @@ import mesh;
 import octree;
 import renderer;
 import shader;
+import std.datetime;
 import std.stdio;
 import std.string;
 import texture;
@@ -53,7 +54,7 @@ void main()
 
     DerelictGL3.reload();
       
-    Renderer.initGL();
+    Renderer.initGL( screenWidth, screenHeight );
 
     SDL_GL_SetSwapInterval( 1 );
     SDL_SetWindowTitle( win, "DGFXBase" );
@@ -63,11 +64,17 @@ void main()
     Mesh cube2 = new Mesh( "assets/cube.obj" );
     Mesh cube3 = new Mesh( "assets/cube.obj" );
     //Mesh sponza = new Mesh( "assets/sponza2.obj" );
+    
+    StopWatch sw;
+    sw.start();
     Mesh armadillo = new Mesh( "assets/armadillo.obj" );
+    long execMs = sw.peek().msecs;
+    writeln( "Armadillo has ", armadillo.getElementCount( 0 ), " triangles" );
+    writeln( "Armadillo loading took ", execMs, " ms" );
 
     const float xoff = -4;
     const float yoff = 4;
-    cube.setPosition( Vec3( 0, 2, -20 ) );
+    cube.setPosition( Vec3( 9, 2, 180 ) );
     cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
     cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
     cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
@@ -88,8 +95,8 @@ void main()
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
     GLuint64[ 10 ] textures;
-    textures[ 0 ] = gliderTex.getHandle64();
-    textures[ 1 ] = fontTex.getHandle64();
+    textures[ 1 ] = gliderTex.getHandle64();
+    textures[ 0 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();
 
@@ -97,8 +104,13 @@ void main()
 
     DirectionalLight dirLight = new DirectionalLight( Vec3( 0, 1, 0 ) );
 
+    sw.start();
     Octree octree = new Octree( armadillo.getSubMeshVertices( 0 ), armadillo.getSubMeshIndices( 0 ), 2.0f, 0.9f );
-    
+    execMs = sw.peek().msecs;
+    writeln( "Armadillo voxelization took ", execMs, " ms" );
+
+    sw.start();
+
     Vec3[] armadilloLinesModelSpace = octree.getLines();
     Vec3[] armadilloLinesWorldSpace;
 
@@ -108,6 +120,9 @@ void main()
     }
 
     Lines octreeLines = new Lines( armadilloLinesWorldSpace );
+
+    execMs = sw.peek().msecs;
+    writeln( "Armadillo line creation took ", execMs, " ms" );
 
     Vec3 aabbPos = Vec3( 5, 5, -22 );
 
@@ -122,8 +137,16 @@ void main()
 
     bool grabMouse = false;
 
+    sw.start();
+
+    long startFrameUs;
+    long endFrameUs;
+    long deltaUs;
+
     while (true)
     {
+        startFrameUs = sw.peek().usecs;
+
         SDL_Event e;
 
         while (SDL_PollEvent( &e ))
@@ -143,13 +166,23 @@ void main()
             {
                 grabMouse = false;
             }
-            else if (e.type == SDL_MOUSEMOTION)
+            else if (e.type == SDL_MOUSEMOTION && grabMouse)
             {
+                float deltaX = e.motion.xrel;
+                float deltaY = e.motion.yrel;
+                    
+                if (e.motion.xrel != 0)
+                {
+                    camera.offsetRotate( Vec3( 0, 1, 0 ), -deltaX / 20 );
+                }
+                if (e.motion.yrel != 0)
+                {
+                    camera.offsetRotate( Vec3( 1, 0, 0 ), -deltaY / 20 );
+                }
             }
             else if (e.type == SDL_MOUSEWHEEL)
             {
                 camera.moveForward( (e.wheel.y > 0) ? -1 : 1 );
-                //camera.lookAt( Vec3( 0, 0, camZ ), Vec3( 0, 0, 200 ) );
             }
             else if (e.type == SDL_KEYDOWN)
             {
@@ -167,27 +200,27 @@ void main()
                 }
                 else if (e.key.keysym.sym == SDLK_w)
                 {
-                    camera.moveForward( 1 );
+                    camera.moveForward( 0.001f * cast(float)deltaUs );
                 }
                 else if (e.key.keysym.sym == SDLK_s)
                 {
-                    camera.moveForward( -1 );
+                    camera.moveForward( -0.001f * cast(float)deltaUs );
                 }
                 else if (e.key.keysym.sym == SDLK_a)
                 {
-                    camera.moveRight( 1 );
+                    camera.moveRight( 0.001f * cast(float)deltaUs );
                 }
                 else if (e.key.keysym.sym == SDLK_d)
                 {
-                    camera.moveRight( -1 );
+                    camera.moveRight( -0.001f * cast(float)deltaUs );
                 }
                 else if (e.key.keysym.sym == SDLK_e)
                 {
-                    camera.moveUp( 1 );
+                    camera.moveUp( -0.001f * cast(float)deltaUs );
                 }
                 else if (e.key.keysym.sym == SDLK_q)
                 {
-                    camera.moveUp( -1 );
+                    camera.moveUp( 0.001f * cast(float)deltaUs );
                 }
             }
             else if (e.type == SDL_QUIT)
@@ -201,7 +234,7 @@ void main()
         Renderer.clearScreen();
         
         cube.updateUBO( camera.getProjection(), camera.getView(), 0 );
-        Renderer.renderMesh( cube, gliderTex, shader, dirLight );
+        Renderer.renderMesh( cube, shader, dirLight );
 
         //cube1.updateUBO( camera.getProjection(), camera.getView() );
         //Renderer.renderMesh( cube1, gliderTex, shader, dirLight );
@@ -213,7 +246,7 @@ void main()
         //Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
 
         armadillo.updateUBO( camera.getProjection(), camera.getView(), 1 );
-        Renderer.renderMesh( armadillo, gliderTex, shader, dirLight );
+        Renderer.renderMesh( armadillo, shader, dirLight );
 
         octreeLines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( octreeLines, lineShader );
@@ -225,6 +258,8 @@ void main()
 
         SDL_GL_SwapWindow( win );
 
+        endFrameUs = sw.peek().usecs;
+        deltaUs = endFrameUs - startFrameUs;
         /*const(char)* error = SDL_GetError();
 
         if (*error != '\n')
