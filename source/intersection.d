@@ -109,7 +109,7 @@ public Vec3 closestPointOnTriangle( Vec3[ 3 ] triangleVerts, Aabb nodeWorldAabb,
     const float d = dot( edge0, v0 );
     const float e = dot( edge1, v0 );
 
-    float det = a * c - b * b;
+    const float det = a * c - b * b;
     float   s = b * e - c * d;
     float   t = b * d - a * e;
 

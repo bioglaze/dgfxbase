@@ -126,18 +126,18 @@ class Font
             const float v1 = (ch.y) / texHeight;
             
             // Upper triangle.
-            faces[ c * 2 + 0 ].c = cast(ushort)(c * 6 + 0);
-            faces[ c * 2 + 0 ].b = cast(ushort)(c * 6 + 1);
-            faces[ c * 2 + 0 ].a = cast(ushort)(c * 6 + 2);
+            faces[ c * 2 + 0 ].c = cast(uint)(c * 6 + 0);
+            faces[ c * 2 + 0 ].b = cast(uint)(c * 6 + 1);
+            faces[ c * 2 + 0 ].a = cast(uint)(c * 6 + 2);
             
             vertices[ c * 6 + 0 ] = Vertex( [offx, offy, z], [u0, v1] );
             vertices[ c * 6 + 1 ] = Vertex( [offx + ch.width * scale, offy, z], [u1, v1] );
             vertices[ c * 6 + 2 ] = Vertex( [offx, offy + ch.height * scale, z], [u0, v0] );
             
             // Lower triangle.
-            faces[ c * 2 + 1 ].c = cast(ushort)(c * 6 + 3);
-            faces[ c * 2 + 1 ].b = cast(ushort)(c * 6 + 4);
-            faces[ c * 2 + 1 ].a = cast(ushort)(c * 6 + 5);
+            faces[ c * 2 + 1 ].c = cast(uint)(c * 6 + 3);
+            faces[ c * 2 + 1 ].b = cast(uint)(c * 6 + 4);
+            faces[ c * 2 + 1 ].a = cast(uint)(c * 6 + 5);
             
             vertices[ c * 6 + 3 ] = Vertex( [offx + ch.width * scale, offy, z], [u1, v1] );
             vertices[ c * 6 + 4 ] = Vertex( [offx + ch.width * scale, offy + ch.height * scale, z], [u1, v0] );

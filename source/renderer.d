@@ -19,7 +19,7 @@ public align(1) struct Vertex
 
 public align(1) struct Face
 {
-    ushort a, b, c;
+    uint a, b, c;
 }
 
 extern(System) private
@@ -99,7 +99,7 @@ public align(1) struct PerObjectUBO
     int textureHandle;
 }
 
-public align(1) struct TextureUBO
+public /*align(1)*/ struct TextureUBO
 {
     GLuint64[ 10 ] textures;
 }
@@ -218,7 +218,10 @@ public abstract class Renderer
         multiply( mvp, orthoMat, mvp );
         updateTextUbo( mvp );
 
+        glBlendFuncSeparate( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE );
+        glEnable( GL_BLEND );
         renderVAO( textVao, textFaceLength * 3, [ 1, 1, 1, 1 ] );
+        glDisable( GL_BLEND );
     }
 
     private static void updateLightUbo( Vec3 lightDirectionInView )
@@ -235,11 +238,12 @@ public abstract class Renderer
     public static void updateTextureUbo( GLuint64[ 10 ] textures )
 	{
 		textureUboStruct.textures = textures;
-        //writeln("0: ", textureUboStruct.textures[0]);
-        //writeln("1: ", textureUboStruct.textures[1]);
+        writeln("0: ", textureUboStruct.textures[0]);
+        writeln("1: ", textureUboStruct.textures[1]);
 
 		GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
-		memcpy( mappedMem, &textureUboStruct, TextureUBO.sizeof );
+		memcpy( mappedMem, textureUboStruct.textures.ptr, TextureUBO.sizeof );
+		//memcpy( mappedMem, &textureUboStruct, textureUBO.sizeof );
         glUnmapNamedBuffer( textureUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 2, textureUbo );
@@ -266,13 +270,13 @@ public abstract class Renderer
     {
         lines.bind();
         shader.use();
-        glDrawArrays( GL_LINES, 0, lines.getElementCount() * 2 );
+        glDrawArraysInstancedBaseInstance( GL_LINES, 0, lines.getElementCount() * 2, 1, 0 );
     }
 
     public static void renderVAO( uint vaoID, int elementCount, float[ 4 ] tintColor )
     {
         glBindVertexArray( vaoID );
-        glDrawElements( GL_TRIANGLES, elementCount, GL_UNSIGNED_SHORT, cast(GLvoid*)0 );
+        glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, elementCount, GL_UNSIGNED_INT, null, 1, 0, 0 );
     }
 
     public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light )
@@ -283,7 +287,7 @@ public abstract class Renderer
         {
             mesh.bind( subMeshIndex );
             shader.use();
-            glDrawElements( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_SHORT, null );
+            glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_INT, null, 1, 0, 0 );
         }
     }
 

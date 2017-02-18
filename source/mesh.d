@@ -68,7 +68,7 @@ private class SubMesh
                 vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
-                face.a = cast( ushort )(interleavedVertices.length - 1);
+                face.a = cast( uint )(interleavedVertices.length - 1);
             }
 
             // Vertex 2
@@ -98,7 +98,7 @@ private class SubMesh
                 vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
-                face.b = cast( ushort )(interleavedVertices.length - 1);
+                face.b = cast( uint )(interleavedVertices.length - 1);
             }
 
             // Vertex 3
@@ -128,7 +128,7 @@ private class SubMesh
                 vertex.normal = [ tnormal.x, tnormal.y, tnormal.z ];
 
                 interleavedVertices ~= vertex;
-                face.c = cast( ushort )(interleavedVertices.length - 1);
+                face.c = cast( uint )(interleavedVertices.length - 1);
             }
 
             indices ~= face;

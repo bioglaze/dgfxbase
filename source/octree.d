@@ -85,7 +85,7 @@ public class Octree
         writeln("octreeDim: ", octreeDim);
 
         float worldSize = octreeDim * voxelSize;
-        octreeOrigin = (dim / 2) - Vec3( worldSize / 2, worldSize / 2, worldSize / 2 );
+        octreeOrigin = meshAabb.getCenter() - Vec3( worldSize / 2, worldSize / 2, worldSize / 2 );
         writeln("octreeOrigin: ", octreeOrigin.x, ", ", octreeOrigin.y, ", ", octreeOrigin.z );
 
         // 3. Creates the octree root.
@@ -327,7 +327,7 @@ public class Octree
         }
     }
 
-    private Aabb getMeshAABB( Vertex[] vertices )
+    private static Aabb getMeshAABB( Vertex[] vertices )
     {
         Vec3 meshAABBMin = Vec3( int.max, int.max, int.max );
         Vec3 meshAABBMax = Vec3( int.min, int.min, int.min );
@@ -376,4 +376,8 @@ unittest
     assert( nextPowerOfTwo( 1 ) == 1, "nextPowerOfTwo with param 1 failed" );
     assert( nextPowerOfTwo( 3 ) == 4, "nextPowerOfTwo with param 3 failed" );
     assert( nextPowerOfTwo( 4 ) == 4, "nextPowerOfTwo with param 4 failed" );
+
+    //Vertex[3] vertices;
+    //Aabb aabb = getMeshAABB( vertices );
+    //assert( );
 }
