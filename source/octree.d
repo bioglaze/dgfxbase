@@ -37,15 +37,6 @@ private class OctreeNode
     public Aabb buildAabb;
     public Aabb worldAabb;
     public NodeType nodeType;
-    public float distanceToSurface;
-}
-
-public Vec3 uniformSphericalSampling( float u, float v )
-{
-    const float phi = v * 2 * PI;
-    const float cosTheta = 1 - u;
-    const float sinTheta = sqrt( 1 - cosTheta * cosTheta );
-    return Vec3( cos( phi ) * sinTheta, sin( phi ) * sinTheta, cosTheta );
 }
 
 public class Octree
@@ -60,13 +51,6 @@ public class Octree
         flattenVertices( vertices, indices, flattenedVertices );
 
         Aabb meshAabb = getMeshAABB( flattenedVertices );
-
-        for (int dirIndex = 0; dirIndex < 200; ++dirIndex)
-        {
-            float x = dirIndex / 200.0f;
-            float y = uniform( 0, 100 ) / 100.0f;
-            sampleDirections ~= uniformSphericalSampling( x, y );
-        }
 
         // 1. Scales the AABB to find the correct octree dimension.
         meshAabb.min.x *= (1.0f / voxelSize);
@@ -100,8 +84,6 @@ public class Octree
         rootNode.buildAabb.max = Vec3( octreeDim, octreeDim, octreeDim ); 
 
         subdivide( rootNode, vertices, indices );
-        const float minCoverage = 0.9f;
-        updateInternalEmptyLeafsSign( rootNode, rootNode, minCoverage );
     }
 
     public Vec3[] getLines()
@@ -162,59 +144,6 @@ public class Octree
         return false;
     }
 
-    private void updateInternalEmptyLeafsSign( OctreeNode rootNode, OctreeNode node, float minCoverage )
-    {
-        if (node is null)
-        {
-            return;
-        }
-
-        if (node.nodeType == NodeType.Leaf)
-        {
-            // The sign has already been updated during octree building
-            return;
-        }
-
-        if (node.nodeType == NodeType.Internal)
-        {
-            for (int childIndex = 0; childIndex < 8; ++childIndex)
-            {
-                updateInternalEmptyLeafsSign( rootNode, node.children[ childIndex ], minCoverage );
-            }
-
-            return;
-        }
-
-        int coverage = 0;
-        int misses = 0;
-        const int sampleDirectionsLength = 200;
-        int maxMisses = sampleDirectionsLength / 4;
-
-        for (int sampleDirectionIndex = 0; sampleDirectionIndex < sampleDirectionsLength; ++sampleDirectionIndex)
-        {
-            Vec3 rayOrigin = node.worldAabb.getCenter();
-            Vec3 rayDirection = sampleDirections[ sampleDirectionIndex ];
-
-            if (rayOctreeIntersection( rayOrigin, rayDirection, node ))
-            {
-                ++coverage;
-            }
-            else
-            {
-                ++misses;
-            }
-
-            if (misses >= maxMisses)
-            {
-                break;
-            }
-        }
-
-        const float fCoverage = coverage / cast(float)sampleDirectionsLength;
-
-        node.distanceToSurface = (fCoverage >= minCoverage) ? -1 : 1;
-    }
-
     private void subdivide( OctreeNode parentNode, Vertex[] vertices, Face[] nodeTriangleIndices )
     {
         uint childIndex = 0;
@@ -270,7 +199,6 @@ public class Octree
             if (childTriangleIndices.length == 0)
             {
                 childNode.nodeType = NodeType.EmptyLeaf;
-                //writeln( "node: empty leaf" );
             }
             else
             {
@@ -278,43 +206,14 @@ public class Octree
                 if (aabbDim == 1)
                 {
                     childNode.nodeType = NodeType.Leaf;
-                    //writeln( "node: leaf" );
-                    updateLeafNodeDistanceValue( childNode, vertices, childTriangleIndices );
                 }
                 else
                 {
                     childNode.nodeType = NodeType.Internal;
-                    //writeln( "node: internal" );
                     subdivide( childNode, vertices, childTriangles );
                 }
             }
         }
-    }
-
-    private void updateLeafNodeDistanceValue( OctreeNode leafNode, Vertex[] vertices, int[] faces ) @nogc
-    {
-        float minDistance = float.max;
-
-        for (int faceIndex = 0; faceIndex < faces.length; ++faceIndex)
-        {
-            Vec3[ 3 ] triangleVerts;
-            triangleVerts[ 0 ] = Vec3( vertices[ faceIndex + 0 ].pos[ 0 ], vertices[ faceIndex + 0 ].pos[ 1 ], vertices[ faceIndex + 0 ].pos[ 2 ] );
-            triangleVerts[ 1 ] = Vec3( vertices[ faceIndex + 1 ].pos[ 0 ], vertices[ faceIndex + 1 ].pos[ 1 ], vertices[ faceIndex + 1 ].pos[ 2 ] );
-            triangleVerts[ 2 ] = Vec3( vertices[ faceIndex + 2 ].pos[ 0 ], vertices[ faceIndex + 2 ].pos[ 1 ], vertices[ faceIndex + 2 ].pos[ 2 ] );
-
-            const Vec3 normal = cross( triangleVerts[ 2 ] - triangleVerts[ 0 ], triangleVerts[ 1 ] - triangleVerts[ 0 ] );
-            const Vec3 closestPoint = closestPointOnTriangle( triangleVerts, leafNode.worldAabb, leafNode.worldAabb.getCenter() );
-            Vec3 delta = closestPoint - leafNode.worldAabb.getCenter();
-            const float sign = (dot( delta, normal ) < 0) ? -1 : 1;
-            float distance = length( delta );
-
-            if (distance < abs( minDistance ))
-            {
-                minDistance = distance * sign;
-            }
-        }
-
-        leafNode.distanceToSurface = minDistance;
     }
 
     private void flattenVertices( Vertex[] vertices, Face[] indices, out Vertex[] flattenedVertices )
@@ -367,7 +266,6 @@ public class Octree
     private float voxelSize;
     private int octreeDim;
     private Vec3 octreeOrigin;
-    private Vec3[] sampleDirections;
     private OctreeNode rootNode;
 }
 
