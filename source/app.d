@@ -59,33 +59,28 @@ void main()
     SDL_GL_SetSwapInterval( 1 );
     SDL_SetWindowTitle( win, "DGFXBase" );
 
-    Mesh cube = new Mesh( "assets/cube.obj" );
-    Mesh cube1 = new Mesh( "assets/cube.obj" );
-    Mesh cube2 = new Mesh( "assets/cube.obj" );
-    Mesh cube3 = new Mesh( "assets/cube.obj" );
-    //Mesh sponza = new Mesh( "assets/sponza2.obj" );
-    
+    //Mesh cube = new Mesh( "assets/cube.obj" );
+    //cube.setPosition( Vec3( 9, 2, 180 ) );
+
+    Mesh sponza = new Mesh( "assets/sponza.obj" );
+    sponza.setScale( 0.5f );
+
     StopWatch sw;
     sw.start();
     Mesh armadillo = new Mesh( "assets/armadillo.obj" );
     long execMs = sw.peek().msecs;
-    writeln( "Armadillo has ", armadillo.getElementCount( 0 ), " triangles" );
-    writeln( "Armadillo loading took ", execMs, " ms" );
-
+    //writeln( "Armadillo has ", armadillo.getElementCount( 0 ), " triangles" );
+    //writeln( "Armadillo loading took ", execMs, " ms" );
     const float xoff = -4;
     const float yoff = 4;
-    cube.setPosition( Vec3( 9, 2, 180 ) );
-    cube1.setPosition( Vec3( 0 + xoff, -6 + yoff, -20 ) );
-    cube2.setPosition( Vec3( 2 + xoff, -8 + yoff, -20 ) );
-    cube3.setPosition( Vec3( 2 + xoff, -6 + yoff, -22 ) );
     armadillo.setPosition( Vec3( 0 + xoff, -5 + yoff, -15 ) );
-    //armadillo.setScale( 0.05f );
+    armadillo.setScale( 0.05f );
     
     Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
     
     Camera camera = new Camera();
-    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 300 );
+    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 400 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
     camera.moveForward( -200 );
 
@@ -95,8 +90,8 @@ void main()
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
     GLuint64[ 10 ] textures;
-    textures[ 1 ] = gliderTex.getHandle64();
-    textures[ 0 ] = fontTex.getHandle64();
+    textures[ 0 ] = gliderTex.getHandle64();
+    textures[ 1 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();
 
@@ -236,14 +231,8 @@ void main()
         //cube.updateUBO( camera.getProjection(), camera.getView(), 0 );
         //Renderer.renderMesh( cube, shader, dirLight );
 
-        //cube1.updateUBO( camera.getProjection(), camera.getView() );
-        //Renderer.renderMesh( cube1, gliderTex, shader, dirLight );
-
-        //cube2.updateUBO( camera.getProjection(), camera.getView() );
-        //Renderer.renderMesh( cube2, gliderTex, shader, dirLight );
-        
-        //cube3.updateUBO( camera.getProjection(), camera.getView() );
-        //Renderer.renderMesh( cube3, gliderTex, shader, dirLight );
+        sponza.updateUBO( camera.getProjection(), camera.getView(), 0 );
+        Renderer.renderMesh( sponza, shader, dirLight );
 
         armadillo.updateUBO( camera.getProjection(), camera.getView(), 1 );
         Renderer.renderMesh( armadillo, shader, dirLight );

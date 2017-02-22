@@ -282,7 +282,7 @@ public abstract class Renderer
     public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light )
     {
         updateLightUbo( Vec3( 0, 1, 0 ) );
-
+        
         for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
         {
             mesh.bind( subMeshIndex );

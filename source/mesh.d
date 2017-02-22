@@ -137,7 +137,11 @@ private class SubMesh
 
     public Vertex[] interleavedVertices;
     public Face[] indices;
-    public string name;
+    public ObjFace[] objFaces;
+    Vec3[] vertices;
+    Vec3[] normals;
+    Vec3[] texcoords;
+    public string name = "unnamed";
 }
 
 public class Mesh
@@ -214,18 +218,50 @@ public class Mesh
         glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
     }
 
+    // Indices are stored in the .obj file relating to the whole object, not
+    // to a mesh, so we need to convert indices so that they point to submeshes'
+    // indices. 
+    uint[ uint ] vertGlobalLocal; // (global index, local index)
+    uint[ uint ] normGlobalLocal;
+    uint[ uint ] tcoordGlobalLocal;
+
+    private void ConvertIndicesFromGlobalToLocal()
+    {
+        bool hasVNormals = normGlobalLocal.length > 0;
+        bool hasTextureCoords = tcoordGlobalLocal.length > 0;
+
+        for (int f = 0; f < subMeshes[ subMeshes.length - 1 ].objFaces.length; ++f)
+        {
+            subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v1 = vertGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v1 ];
+            subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v2 = vertGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v2 ];
+            subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v3 = vertGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].v3 ];
+
+            if (hasVNormals)
+            {
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n1 = normGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n1 ];
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n2 = normGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n2 ];
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n3 = normGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].n3 ];
+            }
+
+            if (hasTextureCoords)
+            {
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t1 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t1 ];
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t2 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t2 ];
+                subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t3 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t3 ];
+            }
+        }
+    }
+
     // Tested only with models exported from Blender. File must contain one mesh only,
     // exported with triangulation, texcoords and normals. Does not support smoothing groups.
     private void loadObj( string path )
     {
         subMeshes = new SubMesh[ 1 ];
         subMeshes[ 0 ] = new SubMesh();
-        vaos = new uint[ subMeshes.length ];
 
 		Vec3[] vertices;
         Vec3[] normals;
         Vec3[] texcoords;
-        ObjFace[] faces;
 
         auto file = File( path, "r" );
 
@@ -235,18 +271,12 @@ public class Mesh
             return;
         }
 
+        // Reads all vertices, normals and texture coordinates to a vector.
         while (!file.eof())
         {
             string line = strip( file.readln() );
-            //writeln( "length ", line.length, ": ", line );
 
-            if (line.length > 1 && (line[ 0 ] == 'o' || line[ 0 ] == 'g'))
-            {
-                string o, name;
-                uint items = formattedRead( line, "%s %s", &o, &name );
-                //writeln("name: ", name);
-            }
-            else if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
+            if (line.length > 1 && line[ 0 ] == 'v' && line[ 1 ] != 'n' && line[1] != 't')
             {
                 Vec3 vertex;
                 string v;
@@ -281,16 +311,46 @@ public class Mesh
 
         file.seek( 0 );
 
+        if (normals.length == 0)
+        {
+            writeln( "Warning: file didn't contain normals." );
+        }
+
         while (!file.eof())
         {
             string line = strip( file.readln() );
 
-            if (line.length > 0 && line[ 0 ] == 'f')
+            if (line.length > 1 && (line[ 0 ] == 'o' || line[ 0 ] == 'g'))
+            {
+                ConvertIndicesFromGlobalToLocal();
+                
+                if (subMeshes[ subMeshes.length - 1 ].name != "unnamed")
+                {
+                    // Some exporters use 'g' without specifying geometry for it, so remove them.
+                    if (subMeshes[ subMeshes.length - 1 ].objFaces.empty())
+                    {
+                        writeln("TODO: Erase empty submesh");
+                        //gMeshes.erase( std::begin( gMeshes ) + gMeshes.size() - 1 );
+                    }
+
+                    subMeshes ~= new SubMesh();
+                    //hasTextureCoords = false;
+                }
+
+                string o, name;
+                uint items = formattedRead( line, "%s %s", &o, &name );
+                subMeshes[ subMeshes.length - 1 ].name = name;
+                writeln( "mesh name: ", name );
+                vertGlobalLocal.clear();
+                normGlobalLocal.clear();
+                tcoordGlobalLocal.clear();
+            }
+            else if (line.length > 0 && line[ 0 ] == 'f')
             {
                 ObjFace face;
                 string v;
                 uint items = 0;
-               
+                bool hasNormalsAndTexCoords = false;
                 auto ctr = ctRegex!(`.[0-9]+ [0-9]+ [0-9]+`);
                 auto c2 = matchFirst( line, ctr ); 
                 if (!c2.empty)
@@ -304,6 +364,56 @@ public class Mesh
                                             &face.v2, &face.t2, &face.n2,
                                             &face.v3, &face.t3, &face.n3 );
                     assert( items == 10, "parse error reading .obj file" );
+                    hasNormalsAndTexCoords = true;
+                }
+
+                // Didn't find the index in index conversion map, so add it.
+                if (!((face.v1 - 1) in vertGlobalLocal))
+                {
+                    subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v1 - 1 ];
+                    vertGlobalLocal[ face.v1 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                }
+                if (!((face.v2 - 1) in vertGlobalLocal))
+                {
+                    subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v2 - 1 ];
+                    vertGlobalLocal[ face.v2 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                }
+                if (!((face.v3 - 1) in vertGlobalLocal))
+                {
+                    subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v3 - 1 ];
+                    vertGlobalLocal[ face.v3 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                }
+
+                if (!((face.t1 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t1 - 1 ];
+                    tcoordGlobalLocal[ face.t1 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                }
+                if (!((face.t2 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t2 - 1 ];
+                    tcoordGlobalLocal[ face.t2 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                }
+                if (!((face.t3 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t3 - 1 ];
+                    tcoordGlobalLocal[ face.t3 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                }
+
+                if (!((face.n1 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n1 - 1 ];
+                    normGlobalLocal[ face.n1 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
+                }
+                if (!((face.n2 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n2 - 1 ];
+                    normGlobalLocal[ face.n2 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
+                }
+                if (!((face.n3 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
+                {
+                    subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n3 - 1 ];
+                    normGlobalLocal[ face.n3 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
                 }
 
                 // OBJ faces are 1-indexed, convert to 0-indexed.
@@ -319,12 +429,20 @@ public class Mesh
                 --face.t2;
                 --face.t3;
 
-                faces ~= face;
+                subMeshes[ subMeshes.length - 1 ].objFaces ~= face;
             }
         }
 
-        subMeshes[ 0 ].interleave( vertices, normals, texcoords, faces );
-        Renderer.generateVAO( subMeshes[ 0 ].interleavedVertices, subMeshes[ 0 ].indices, path, vaos[ 0 ] );
+        vaos = new uint[ subMeshes.length ];
+        writeln("submeshes in ", path, ": ", subMeshes.length);
+
+        ConvertIndicesFromGlobalToLocal();
+
+        for (int subMeshIndex = 0; subMeshIndex < subMeshes.length; ++subMeshIndex)
+        {
+            subMeshes[ subMeshIndex ].interleave( subMeshes[ subMeshIndex ].vertices, subMeshes[ subMeshIndex ].normals, subMeshes[ subMeshIndex ].texcoords, subMeshes[ subMeshIndex ].objFaces );
+            Renderer.generateVAO( subMeshes[ subMeshIndex ].interleavedVertices, subMeshes[ subMeshIndex ].indices, path, vaos[ subMeshIndex ] );
+        }
     }
 
     public uint getElementCount( int subMeshIndex ) const
