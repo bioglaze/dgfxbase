@@ -263,7 +263,13 @@ public abstract class Renderer
 
     public static void clearScreen()
     {
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+        static const float[] black = [ 0.0f, 0.0f, 0.0f, 0.0f ];
+        glClearBufferfv( GL_COLOR, 0, black.ptr );
+
+        static const float[] clear = [ 1 ];
+        glClearBufferfv( GL_DEPTH, 0, clear.ptr );
     }
 
     public static void renderLines( Lines lines, Shader shader )

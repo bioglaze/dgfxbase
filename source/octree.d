@@ -228,8 +228,8 @@ public class Octree
 
     private static Aabb getMeshAABB( Vertex[] vertices )
     {
-        Vec3 meshAABBMin = Vec3( int.max, int.max, int.max );
-        Vec3 meshAABBMax = Vec3( int.min, int.min, int.min );
+        Vec3 meshAABBMin = Vec3( 99999, 99999, 99999 );
+        Vec3 meshAABBMax = Vec3(-99999,-99999,-99999 );
 
         foreach(vertex; vertices)
         {

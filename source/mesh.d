@@ -2,6 +2,7 @@ import core.stdc.string;
 import derelict.opengl3.gl3;
 import matrix4x4;
 import renderer;
+import std.file;
 import std.format;
 import std.math;
 import std.regex;
@@ -138,18 +139,24 @@ private class SubMesh
     public Vertex[] interleavedVertices;
     public Face[] indices;
     public ObjFace[] objFaces;
-    Vec3[] vertices;
-    Vec3[] normals;
-    Vec3[] texcoords;
+    public string texturePath;
     public string name = "unnamed";
+    private Vec3[] vertices;
+    private Vec3[] normals;
+    private Vec3[] texcoords;
 }
 
 public class Mesh
 {
-    this( string path )
+    this( string path, string mtlPath )
     {
         loadObj( path );
         
+        if (std.file.exists( mtlPath ))
+        {
+            loadMtl( mtlPath );
+        }
+
         glCreateBuffers( 1, &ubo );
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
@@ -252,7 +259,58 @@ public class Mesh
         }
     }
 
-    // Tested only with models exported from Blender. File must contain one mesh only,
+    private void loadMtl( string path )
+    {
+        auto file = File( path, "r" );
+
+        if (!file.isOpen())
+        {
+            writeln( "Could not open ", path );
+            return;
+        }
+
+        int subMeshIndex = -1;
+
+        while (!file.eof())
+        {
+            string line = strip( file.readln() );
+
+            if (line.indexOf( "newmtl" ) != -1)
+            {
+                string discard, materialName;
+                const uint items = formattedRead( line, "%s %s", &discard, &materialName );
+                assert( items == 2, "parse error reading .mtl file" );
+
+                /*for (int i = 0; i < subMeshes.length; ++i)
+                {
+                    writeln( "subMesh name:  ", subMeshes[ i ].name );
+
+                    if (subMeshes[ i ].name == meshName)
+                    {
+                        writeln( "found mesh ", meshName );
+                        subMeshIndex = i;
+                        break;
+                    }
+                }*/
+            }
+            else if (line.indexOf( "map_Kd" ) != -1)
+            {
+                //assert( subMeshIndex != -1, "Found map_kD before mesh" );
+
+                string discard, textureName;
+                const uint items = formattedRead( line, "%s %s", &discard, &textureName );
+                assert( items == 2, "parse error reading .mtl file" );
+
+                if (subMeshIndex != -1)
+                {
+                    subMeshes[ subMeshIndex ].texturePath = textureName;
+                    writeln( "submesh ", subMeshes[ subMeshIndex ].name, " texture: ", textureName );
+                }
+            }
+        }
+    }
+
+    // Tested only with models exported from Blender. File must be
     // exported with triangulation, texcoords and normals. Does not support smoothing groups.
     private void loadObj( string path )
     {

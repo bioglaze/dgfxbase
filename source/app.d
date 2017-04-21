@@ -59,15 +59,15 @@ void main()
     SDL_GL_SetSwapInterval( 1 );
     SDL_SetWindowTitle( win, "DGFXBase" );
 
-    //Mesh cube = new Mesh( "assets/cube.obj" );
+    //Mesh cube = new Mesh( "assets/cube.obj", "" );
     //cube.setPosition( Vec3( 9, 2, 180 ) );
 
-    Mesh sponza = new Mesh( "assets/sponza.obj" );
+    Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza.mtl" );
     sponza.setScale( 0.5f );
 
     StopWatch sw;
     sw.start();
-    Mesh armadillo = new Mesh( "assets/armadillo.obj" );
+    Mesh armadillo = new Mesh( "assets/armadillo.obj", "" );
     long execMs = sw.peek().msecs;
     //writeln( "Armadillo has ", armadillo.getElementCount( 0 ), " triangles" );
     //writeln( "Armadillo loading took ", execMs, " ms" );
