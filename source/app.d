@@ -62,8 +62,13 @@ void main()
     //Mesh cube = new Mesh( "assets/cube.obj", "" );
     //cube.setPosition( Vec3( 9, 2, 180 ) );
 
-    Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza.mtl" );
+    Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
     sponza.setScale( 0.5f );
+
+    for (int subMeshIndex = 0; subMeshIndex < sponza.getSubMeshCount(); ++subMeshIndex)
+    {
+        writeln( "index ", subMeshIndex, " name: ", sponza.getSubMeshName( subMeshIndex ) );
+    }
 
     StopWatch sw;
     sw.start();
@@ -80,7 +85,7 @@ void main()
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
     
     Camera camera = new Camera();
-    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 400 );
+    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 600 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
     camera.moveForward( -200 );
 

@@ -8,6 +8,7 @@ import std.math;
 import std.regex;
 import std.stdio;
 import std.string;
+import texture;
 import vec3;
 
 private struct ObjFace
@@ -148,18 +149,62 @@ private class SubMesh
 
 public class Mesh
 {
-    this( string path, string mtlPath )
+    this( string path, string materialPath )
     {
         loadObj( path );
-        
-        if (std.file.exists( mtlPath ))
+
+        if (materialPath != "")
         {
-            loadMtl( mtlPath );
+            loadMaterials( materialPath );
         }
 
         glCreateBuffers( 1, &ubo );
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glNamedBufferStorage( ubo, uboStruct.sizeof, &uboStruct, flags );
+    }
+
+    private void loadMaterials( string materialPath )
+    {
+        auto file = File( materialPath, "r" );
+
+        if (!file.isOpen())
+        {
+            writeln( "Could not open ", materialPath );
+            return;
+        }
+
+        bool isReadingMaterials = false;
+        bool isReadingMappings = false;
+
+        while (!file.eof())
+        {
+            string line = strip( file.readln() );
+
+            if (indexOf( line, "materials" ) != -1)
+            {
+                isReadingMaterials = true;
+            }
+            else if (indexOf( line, "mappings" ) != -1)
+            {
+                isReadingMappings = true;
+            }
+            else if (isReadingMaterials && line.length > 1)
+            {
+                string materialName, textureName;
+                uint items = formattedRead( line, "%s %s", &materialName, &textureName );
+                assert( items == 2, "parse error reading material file" );
+
+                textureFromMaterial[ materialName ] = new Texture( textureName );
+            }
+            else if (isReadingMappings && line.length > 1)
+            {
+                string subMeshName, materialName;
+                uint items = formattedRead( line, "%s %s", &subMeshName, &materialName );
+                assert( items == 2, "parse error reading material file" );
+
+                materialFromMeshName[ subMeshName ] = materialName;
+            }
+        }
     }
 
     public Face[] getSubMeshIndices( int subMeshIndex )
@@ -202,6 +247,16 @@ public class Mesh
         this.scale = scale;
     }
 
+    public string getSubMeshName( int subMeshIndex )
+    {
+        return subMeshes[ subMeshIndex ].name;
+    }
+
+    public void setSubMeshDiffuseMap( int subMeshIndex )
+    {
+
+    }
+
     public void updateUBO( Matrix4x4 projection, Matrix4x4 view, int textureHandle )
     {
         Matrix4x4 mvp;
@@ -224,13 +279,6 @@ public class Mesh
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 0, ubo );
     }
-
-    // Indices are stored in the .obj file relating to the whole object, not
-    // to a mesh, so we need to convert indices so that they point to submeshes'
-    // indices. 
-    uint[ uint ] vertGlobalLocal; // (global index, local index)
-    uint[ uint ] normGlobalLocal;
-    uint[ uint ] tcoordGlobalLocal;
 
     private void ConvertIndicesFromGlobalToLocal()
     {
@@ -255,57 +303,6 @@ public class Mesh
                 subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t1 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t1 ];
                 subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t2 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t2 ];
                 subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t3 = tcoordGlobalLocal[ subMeshes[ subMeshes.length - 1 ].objFaces[ f ].t3 ];
-            }
-        }
-    }
-
-    private void loadMtl( string path )
-    {
-        auto file = File( path, "r" );
-
-        if (!file.isOpen())
-        {
-            writeln( "Could not open ", path );
-            return;
-        }
-
-        int subMeshIndex = -1;
-
-        while (!file.eof())
-        {
-            string line = strip( file.readln() );
-
-            if (line.indexOf( "newmtl" ) != -1)
-            {
-                string discard, materialName;
-                const uint items = formattedRead( line, "%s %s", &discard, &materialName );
-                assert( items == 2, "parse error reading .mtl file" );
-
-                /*for (int i = 0; i < subMeshes.length; ++i)
-                {
-                    writeln( "subMesh name:  ", subMeshes[ i ].name );
-
-                    if (subMeshes[ i ].name == meshName)
-                    {
-                        writeln( "found mesh ", meshName );
-                        subMeshIndex = i;
-                        break;
-                    }
-                }*/
-            }
-            else if (line.indexOf( "map_Kd" ) != -1)
-            {
-                //assert( subMeshIndex != -1, "Found map_kD before mesh" );
-
-                string discard, textureName;
-                const uint items = formattedRead( line, "%s %s", &discard, &textureName );
-                assert( items == 2, "parse error reading .mtl file" );
-
-                if (subMeshIndex != -1)
-                {
-                    subMeshes[ subMeshIndex ].texturePath = textureName;
-                    writeln( "submesh ", subMeshes[ subMeshIndex ].name, " texture: ", textureName );
-                }
             }
         }
     }
@@ -508,6 +505,15 @@ public class Mesh
         return cast( uint )subMeshes[ subMeshIndex ].indices.length;
     }
 
+    // Indices are stored in the .obj file relating to the whole object, not
+    // to a mesh, so we need to convert indices so that they point to submeshes'
+    // indices. 
+    private uint[ uint ] vertGlobalLocal; // (global index, local index)
+    private uint[ uint ] normGlobalLocal;
+    private uint[ uint ] tcoordGlobalLocal;
+
+    private Texture[ string ] textureFromMaterial;
+    private string[ string ] materialFromMeshName;
     private uint[] vaos;
     private uint ubo;
     private PerObjectUBO uboStruct;
