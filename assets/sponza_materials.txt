@@ -1,30 +1,30 @@
 materials
 
-Material__25 lion.png
-Material__298 background.png
-Material__47 background.png
-Material__57 vase_plant.png
-arch sponza_arch_diff.png
-bricks spnza_bricks_a_diff.png
-ceiling sponza_ceiling_a_diff.png
-chain chain_texture.png
-column_a sponza_column_a_diff.png
-column_b sponza_column_b_diff.png
-column_c sponza_column_c_diff.png
-details sponza_details_diff.png
-fabric_a sponza_fabric_diff.png
-fabric_c sponza_curtain_diff.png
-fabric_d sponza_fabric_blue_diff.png
-fabric_e sponza_fabric_green_diff.png
-fabric_f sponza_curtain_green_diff.png
-fabric_g sponza_curtain_blue_diff.png
-flagpole sponza_flagpole_diff.png
-floor sponza_floor_a_diff.png
-leaf sponza_thorn_diff.png
-roof sponza_roof_diff.png
-vase vase_dif.png
-vase_hanging vase_hanging.png
-vase_round vase_round.png
+Material__25 lion.tga
+Material__298 background.tga
+Material__47 background.tga
+Material__57 vase_plant.tga
+arch sponza_arch_diff.tga
+bricks spnza_bricks_a_diff.tga
+ceiling sponza_ceiling_a_diff.tga
+chain chain_texture.tga
+column_a sponza_column_a_diff.tga
+column_b sponza_column_b_diff.tga
+column_c sponza_column_c_diff.tga
+details sponza_details_diff.tga
+fabric_a sponza_fabric_diff.tga
+fabric_c sponza_curtain_diff.tga
+fabric_d sponza_fabric_blue_diff.tga
+fabric_e sponza_fabric_green_diff.tga
+fabric_f sponza_curtain_green_diff.tga
+fabric_g sponza_curtain_blue_diff.tga
+flagpole sponza_flagpole_diff.tga
+floor sponza_floor_a_diff.tga
+leaf sponza_thorn_diff.tga
+roof sponza_roof_diff.tga
+vase vase_dif.tga
+vase_hanging vase_hanging.tga
+vase_round vase_round.tga
 
 mappings
 

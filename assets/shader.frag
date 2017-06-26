@@ -17,12 +17,11 @@ layout(std140, binding=1) uniform LightUbo
 
 layout(std140, binding=2) uniform TextureUBO
 {
-    sampler2D samplers[ 10 ];
+    sampler2D samplers[ 32 ];
 };
 
-in vec2 vUV;
-in vec3 vNormalVS;
-out vec4 fragColor;
+layout (location = 0) in vec2 vUV;
+layout(location=0) out vec4 fragColor;
 
 void main()
 {

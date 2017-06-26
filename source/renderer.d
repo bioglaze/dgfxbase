@@ -101,7 +101,7 @@ public align(1) struct PerObjectUBO
 
 public /*align(1)*/ struct TextureUBO
 {
-    GLuint64[ 10 ] textures;
+    GLuint64[ 32 ] textures;
 }
 
 public class Lines
@@ -238,8 +238,8 @@ public abstract class Renderer
     public static void updateTextureUbo( GLuint64[ 10 ] textures )
 	{
 		textureUboStruct.textures = textures;
-        writeln("0: ", textureUboStruct.textures[0]);
-        writeln("1: ", textureUboStruct.textures[1]);
+        //writeln("0: ", textureUboStruct.textures[0]);
+        //writeln("1: ", textureUboStruct.textures[1]);
 
 		GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
 		memcpy( mappedMem, textureUboStruct.textures.ptr, TextureUBO.sizeof );

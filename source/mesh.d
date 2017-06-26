@@ -183,9 +183,11 @@ public class Mesh
             if (indexOf( line, "materials" ) != -1)
             {
                 isReadingMaterials = true;
+                isReadingMappings = false;
             }
             else if (indexOf( line, "mappings" ) != -1)
             {
+                isReadingMaterials = false;
                 isReadingMappings = true;
             }
             else if (isReadingMaterials && line.length > 1)
@@ -194,7 +196,7 @@ public class Mesh
                 uint items = formattedRead( line, "%s %s", &materialName, &textureName );
                 assert( items == 2, "parse error reading material file" );
 
-                textureFromMaterial[ materialName ] = new Texture( textureName );
+                textureFromMaterial[ materialName ] = new Texture( "assets/textures/" ~ textureName );
             }
             else if (isReadingMappings && line.length > 1)
             {

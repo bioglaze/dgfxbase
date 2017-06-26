@@ -94,7 +94,7 @@ void main()
     Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
-    GLuint64[ 10 ] textures;
+    GLuint64[ 32 ] textures;
     textures[ 0 ] = gliderTex.getHandle64();
     textures[ 1 ] = fontTex.getHandle64();
     gliderTex.makeResident();
