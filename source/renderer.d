@@ -235,22 +235,22 @@ public abstract class Renderer
         glBindBufferBase( GL_UNIFORM_BUFFER, 1, lightUbo );
     }
 
-    public static void updateTextureUbo( GLuint64[ 10 ] textures )
-	{
-		textureUboStruct.textures = textures;
+    public static void updateTextureUbo( GLuint64[ 32 ] textures )
+    {
+        textureUboStruct.textures = textures;
         //writeln("0: ", textureUboStruct.textures[0]);
         //writeln("1: ", textureUboStruct.textures[1]);
 
-		GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
-		memcpy( mappedMem, textureUboStruct.textures.ptr, TextureUBO.sizeof );
-		//memcpy( mappedMem, &textureUboStruct, textureUBO.sizeof );
+        GLvoid* mappedMem = glMapNamedBuffer( textureUbo, GL_WRITE_ONLY );
+        memcpy( mappedMem, textureUboStruct.textures.ptr, TextureUBO.sizeof );
+        //memcpy( mappedMem, &textureUboStruct, textureUBO.sizeof );
         glUnmapNamedBuffer( textureUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 2, textureUbo );
-	}
+    }
 
     public static void updateTextUbo( Matrix4x4 mvp )
-	{
+    {
         textUboStruct.modelToClip = mvp;
         textUboStruct.textureHandle = 0;
 
@@ -259,7 +259,7 @@ public abstract class Renderer
         glUnmapNamedBuffer( textUbo );
 
         glBindBufferBase( GL_UNIFORM_BUFFER, 0, textUbo );
-	}
+    }
 
     public static void clearScreen()
     {
@@ -285,13 +285,14 @@ public abstract class Renderer
         glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, elementCount, GL_UNSIGNED_INT, null, 1, 0, 0 );
     }
 
-    public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light )
+    public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light, Matrix4x4 projection, Matrix4x4 view )
     {
         updateLightUbo( Vec3( 0, 1, 0 ) );
         
         for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
         {
             mesh.bind( subMeshIndex );
+            mesh.updateUBO( projection, view, subMeshIndex % 32 );
             shader.use();
             glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_INT, null, 1, 0, 0 );
         }

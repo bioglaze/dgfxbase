@@ -38,7 +38,7 @@ void bindGLFunc( void** ptr, string symName )
 }
 
 // Reads a true-color, uncompressed TGA
-private void readTGA( string path, out int width, out int height, out byte[] pixelData )
+private void readTGA( string path, out int width, out int height, out int bits, out byte[] pixelData )
 {
     try
     {
@@ -49,6 +49,11 @@ private void readTGA( string path, out int width, out int height, out byte[] pix
 
         byte[ 1 ] colorMapType;
         f.rawRead( colorMapType );
+
+        if (colorMapType[ 0 ] != 0)
+        {
+            throw new Exception( "wrong TGA type: must not have color map" );
+        }
 
         byte[ 1 ] imageType;
         f.rawRead( imageType );
@@ -71,13 +76,15 @@ private void readTGA( string path, out int width, out int height, out byte[] pix
         byte[ 2 ] specEnd;
         f.rawRead( specEnd );
 
+        bits = specEnd[ 0 ];
+
         if (idLength[ 0 ] > 0)
         {
             byte[] imageId = new byte[ idLength[ 0 ] ];
             f.rawRead( imageId );
         }
 
-        pixelData = new byte[ width * height * 4 ];
+        pixelData = new byte[ width * height * (bits == 24 ? 3 : 4) ];
         f.rawRead( pixelData );
     }
     catch (Exception e)
@@ -97,13 +104,14 @@ public class Texture
     this( string path )
     {
         byte[] pixelData;
-        readTGA( path, width, height, pixelData );
+        int bits;
+        readTGA( path, width, height, bits, pixelData );
         
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
         glBindTextureUnit( 0, handle );
 
         glTextureStorage2D( handle, 1, GL_SRGB8_ALPHA8, width, height );
-        glTextureSubImage2D( handle, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixelData.ptr );
+        glTextureSubImage2D( handle, 0, 0, 0, width, height, bits == 32 ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, pixelData.ptr );
 
         glTextureParameteri( handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTextureParameteri( handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );

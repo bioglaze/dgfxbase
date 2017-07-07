@@ -85,7 +85,7 @@ void main()
     Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
     
     Camera camera = new Camera();
-    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 600 );
+    camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 800 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
     camera.moveForward( -200 );
 
@@ -95,8 +95,18 @@ void main()
     Texture gliderTex = new Texture( "assets/glider.tga" );
     
     GLuint64[ 32 ] textures;
-    textures[ 0 ] = gliderTex.getHandle64();
-    textures[ 1 ] = fontTex.getHandle64();
+    int i = 0;
+    foreach (texture; sponza.textureFromMaterial)
+    {
+        textures[ i ] = texture.getHandle64();
+        //textures[ i ] = gliderTex.getHandle64();
+
+        texture.makeResident();
+        ++i;
+    }
+
+    textures[ 30 ] = gliderTex.getHandle64();
+    textures[ 31 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();
 
@@ -233,14 +243,11 @@ void main()
 
         Renderer.clearScreen();
         
-        //cube.updateUBO( camera.getProjection(), camera.getView(), 0 );
         //Renderer.renderMesh( cube, shader, dirLight );
 
-        sponza.updateUBO( camera.getProjection(), camera.getView(), 0 );
-        Renderer.renderMesh( sponza, shader, dirLight );
+        Renderer.renderMesh( sponza, shader, dirLight, camera.getProjection(), camera.getView() );
 
-        armadillo.updateUBO( camera.getProjection(), camera.getView(), 1 );
-        Renderer.renderMesh( armadillo, shader, dirLight );
+        Renderer.renderMesh( armadillo, shader, dirLight, camera.getProjection(), camera.getView() );
 
         octreeLines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( octreeLines, lineShader );

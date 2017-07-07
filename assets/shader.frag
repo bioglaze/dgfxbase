@@ -20,7 +20,7 @@ layout(std140, binding=2) uniform TextureUBO
     sampler2D samplers[ 32 ];
 };
 
-layout (location = 0) in vec2 vUV;
+layout(location = 0) in vec2 vUV;
 layout(location=0) out vec4 fragColor;
 
 void main()

@@ -428,49 +428,49 @@ public class Mesh
                 if (!((face.v1 - 1) in vertGlobalLocal))
                 {
                     subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v1 - 1 ];
-                    vertGlobalLocal[ face.v1 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                    vertGlobalLocal[ face.v1 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
                 }
                 if (!((face.v2 - 1) in vertGlobalLocal))
                 {
                     subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v2 - 1 ];
-                    vertGlobalLocal[ face.v2 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                    vertGlobalLocal[ face.v2 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
                 }
                 if (!((face.v3 - 1) in vertGlobalLocal))
                 {
                     subMeshes[ subMeshes.length - 1 ].vertices ~= vertices[ face.v3 - 1 ];
-                    vertGlobalLocal[ face.v3 - 1 ] = subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
+                    vertGlobalLocal[ face.v3 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].vertices.length - 1;
                 }
 
                 if (!((face.t1 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t1 - 1 ];
-                    tcoordGlobalLocal[ face.t1 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                    tcoordGlobalLocal[ face.t1 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
                 }
                 if (!((face.t2 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t2 - 1 ];
-                    tcoordGlobalLocal[ face.t2 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                    tcoordGlobalLocal[ face.t2 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
                 }
                 if (!((face.t3 - 1) in tcoordGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].texcoords ~= texcoords[ face.t3 - 1 ];
-                    tcoordGlobalLocal[ face.t3 - 1 ] = subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
+                    tcoordGlobalLocal[ face.t3 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].texcoords.length - 1;
                 }
 
                 if (!((face.n1 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n1 - 1 ];
-                    normGlobalLocal[ face.n1 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
+                    normGlobalLocal[ face.n1 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].normals.length - 1;
                 }
                 if (!((face.n2 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n2 - 1 ];
-                    normGlobalLocal[ face.n2 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
+                    normGlobalLocal[ face.n2 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].normals.length - 1;
                 }
                 if (!((face.n3 - 1) in normGlobalLocal) && hasNormalsAndTexCoords)
                 {
                     subMeshes[ subMeshes.length - 1 ].normals ~= normals[ face.n3 - 1 ];
-                    normGlobalLocal[ face.n3 - 1 ] = subMeshes[ subMeshes.length - 1 ].normals.length - 1;
+                    normGlobalLocal[ face.n3 - 1 ] = cast(uint)subMeshes[ subMeshes.length - 1 ].normals.length - 1;
                 }
 
                 // OBJ faces are 1-indexed, convert to 0-indexed.
@@ -514,7 +514,7 @@ public class Mesh
     private uint[ uint ] normGlobalLocal;
     private uint[ uint ] tcoordGlobalLocal;
 
-    private Texture[ string ] textureFromMaterial;
+    public Texture[ string ] textureFromMaterial;
     private string[ string ] materialFromMeshName;
     private uint[] vaos;
     private uint ubo;
