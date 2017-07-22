@@ -58,9 +58,9 @@ private void readTGA( string path, out int width, out int height, out int bits, 
         byte[ 1 ] imageType;
         f.rawRead( imageType );
 
-        if (imageType[ 0 ] != 2)
+        if (imageType[ 0 ] != 2 && imageType[ 0 ] != 10)
         {
-            throw new Exception( "wrong TGA type: must be uncompressed true-color" );
+            throw new Exception( "Wrong TGA type: Must not be color-mapped" );
         }
 
         byte[ 5 ] colorSpec;
@@ -85,7 +85,61 @@ private void readTGA( string path, out int width, out int height, out int bits, 
         }
 
         pixelData = new byte[ width * height * (bits == 24 ? 3 : 4) ];
-        f.rawRead( pixelData );
+
+        if (imageType[ 0 ] == 2)
+        {
+            f.rawRead( pixelData );
+            return;
+        }
+
+        // RLE
+
+        int size = width * height;
+        int loaded = 0;
+
+        while (loaded < size)
+        {
+            const enum RLE_BIT = 1 << 7;
+
+            ubyte[ 1 ] packetBit;
+            f.rawRead( packetBit );
+
+            if (packetBit[ 0 ] & RLE_BIT)
+            {
+                // RLE packet
+
+                immutable ubyte count = (packetBit[ 0 ] & ~RLE_BIT) + 1;
+
+                ubyte[] tmp = new ubyte[ bits / 8 ];
+                f.rawRead( tmp );
+
+                for (int i = 0; i < count; ++i)
+                {
+                    ++loaded;
+
+                    if (loaded > size)
+                    {
+                        assert( false, "TGA file reader error reading an RLE-encoded file: loaded more than its size in an RLE packet" );
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                // RAW packet
+
+                immutable ubyte count = (packetBit[ 0 ] & ~RLE_BIT) + 1;
+
+                if (loaded + count > size)
+                {
+                    assert( false, "TGA file reader error reading an RLE-encoded file: loaded more than its size in a non-RLE packet" );
+                    return;
+                }
+
+                loaded += count;
+
+            }
+        }
     }
     catch (Exception e)
     {
