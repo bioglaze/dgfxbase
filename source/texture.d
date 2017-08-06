@@ -1,3 +1,4 @@
+import core.stdc.string;
 import derelict.opengl3.gl3;
 import renderer;
 import std.exception;
@@ -96,19 +97,20 @@ private void readTGA( string path, out int width, out int height, out int bits, 
 
         int size = width * height;
         int loaded = 0;
+        void* pos = &pixelData[ 0 ];
 
-        while (loaded < size)
+        while ((loaded < size) && !f.eof)
         {
-            const enum RLE_BIT = 1 << 7;
+            enum RLE_BIT = 1 << 7;
 
             ubyte[ 1 ] packetBit;
             f.rawRead( packetBit );
 
+            immutable ubyte count = (packetBit[ 0 ] & ~RLE_BIT) + 1;
+
             if (packetBit[ 0 ] & RLE_BIT)
             {
                 // RLE packet
-
-                immutable ubyte count = (packetBit[ 0 ] & ~RLE_BIT) + 1;
 
                 ubyte[] tmp = new ubyte[ bits / 8 ];
                 f.rawRead( tmp );
@@ -119,25 +121,28 @@ private void readTGA( string path, out int width, out int height, out int bits, 
 
                     if (loaded > size)
                     {
+                        writeln( "loaded: ", loaded, ", size: ", size );
                         assert( false, "TGA file reader error reading an RLE-encoded file: loaded more than its size in an RLE packet" );
-                        return;
                     }
+
+                    memcpy( pos, tmp.ptr, bits / 8 );
+                    pos += bits / 8;
                 }
             }
             else
             {
                 // RAW packet
 
-                immutable ubyte count = (packetBit[ 0 ] & ~RLE_BIT) + 1;
-
                 if (loaded + count > size)
                 {
                     assert( false, "TGA file reader error reading an RLE-encoded file: loaded more than its size in a non-RLE packet" );
-                    return;
                 }
 
                 loaded += count;
-
+                ubyte[] tmp = new ubyte[ (bits / 8) * count ];
+                f.rawRead( tmp );
+                memcpy( pos, tmp.ptr, (bits / 8) * count );
+                pos += (bits / 8) * count;
             }
         }
     }

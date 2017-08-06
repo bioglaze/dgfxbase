@@ -93,20 +93,19 @@ void main()
     
     Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );
-    Texture rleTex = new Texture( "assets/vase_plant_rle.tga" );
+    Texture rleTex = new Texture( "assets/textures/vase_plant_rle.tga" );
+    rleTex.makeResident();
 
     GLuint64[ 32 ] textures;
     int i = 0;
     foreach (texture; sponza.textureFromMaterial)
     {
-        textures[ i ] = rleTex.getHandle64();// texture.getHandle64();
-        //textures[ i ] = gliderTex.getHandle64();
-
-        //textures[ i ].makeResident();
+        textures[ i ] = texture.getHandle64();
         ++i;
     }
 
-    textures[ 30 ] = gliderTex.getHandle64();
+    //textures[ 30 ] = gliderTex.getHandle64();
+    textures[ 30 ] = rleTex.getHandle64();
     textures[ 31 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();
