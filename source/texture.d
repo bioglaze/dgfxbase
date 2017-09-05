@@ -160,11 +160,13 @@ public class Texture
         bindGLFunc( cast(void**)&glMakeTextureHandleResidentARB, "glMakeTextureHandleResidentARB" );
     }
 
-    this( string path )
+    this( string path2 )
     {
+        this.path = path2;
+
         byte[] pixelData;
         int bits;
-        readTGA( path, width, height, bits, pixelData );
+        readTGA( path2, width, height, bits, pixelData );
         
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
         glBindTextureUnit( 0, handle );
@@ -210,4 +212,5 @@ public class Texture
     private int width, height;
     private GLuint handle;
     private GLuint64 handle64;
+    public string path;
 }

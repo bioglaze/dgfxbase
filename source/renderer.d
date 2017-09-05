@@ -285,14 +285,15 @@ public abstract class Renderer
         glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, elementCount, GL_UNSIGNED_INT, null, 1, 0, 0 );
     }
 
-    public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light, Matrix4x4 projection, Matrix4x4 view )
+    public static void renderMesh( Mesh mesh, Shader shader, DirectionalLight light, Matrix4x4 viewToClip, Matrix4x4 worldToView )
     {
         updateLightUbo( Vec3( 0, 1, 0 ) );
         
         for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
         {
+            writeln("mesh.subMeshes[ ", subMeshIndex, " ].textureIndex: ", mesh.subMeshes[ subMeshIndex ].textureIndex, ", path: ", mesh.subMeshes[ subMeshIndex ].texturePath );
             mesh.bind( subMeshIndex );
-            mesh.updateUBO( projection, view, subMeshIndex % 32 );
+            mesh.updateUBO( viewToClip, worldToView, mesh.subMeshes[ subMeshIndex ].textureIndex );
             shader.use();
             glDrawElementsInstancedBaseVertexBaseInstance( GL_TRIANGLES, mesh.getElementCount( subMeshIndex ) * 3, GL_UNSIGNED_INT, null, 1, 0, 0 );
         }

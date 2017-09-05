@@ -65,11 +65,6 @@ void main()
     Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
     sponza.setScale( 0.5f );
 
-    for (int subMeshIndex = 0; subMeshIndex < sponza.getSubMeshCount(); ++subMeshIndex)
-    {
-        writeln( "index ", subMeshIndex, " name: ", sponza.getSubMeshName( subMeshIndex ) );
-    }
-
     StopWatch sw;
     sw.start();
     Mesh armadillo = new Mesh( "assets/armadillo.obj", "" );
@@ -97,10 +92,22 @@ void main()
     rleTex.makeResident();
 
     GLuint64[ 32 ] textures;
+
     int i = 0;
     foreach (texture; sponza.textureFromMaterial)
     {
         textures[ i ] = texture.getHandle64();
+        //writeln("index ", i, ": ", texture.path);
+
+        for (int subMeshIndex = 0; subMeshIndex < sponza.subMeshes.length; ++subMeshIndex)
+        {
+            if (sponza.subMeshes[ subMeshIndex ].texturePath == texture.path)
+            {
+                sponza.subMeshes[ subMeshIndex ].textureIndex = i;
+                continue;
+            }
+        }
+
         ++i;
     }
 

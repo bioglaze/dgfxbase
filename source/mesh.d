@@ -142,6 +142,7 @@ private class SubMesh
     public ObjFace[] objFaces;
     public string texturePath;
     public string name = "unnamed";
+    public int textureIndex;
     private Vec3[] vertices;
     private Vec3[] normals;
     private Vec3[] texcoords;
@@ -205,6 +206,14 @@ public class Mesh
                 assert( items == 2, "parse error reading material file" );
 
                 materialFromMeshName[ subMeshName ] = materialName;
+
+                for (int meshIndex = 0; meshIndex < subMeshes.length; ++meshIndex)
+                {
+                    if (subMeshes[ meshIndex ].name == subMeshName)
+                    {
+                        subMeshes[ meshIndex ].texturePath = textureFromMaterial[ materialName ].path;
+                    }
+                }
             }
         }
     }
@@ -397,7 +406,6 @@ public class Mesh
                 string o, name;
                 uint items = formattedRead( line, "%s %s", &o, &name );
                 subMeshes[ subMeshes.length - 1 ].name = name;
-                writeln( "mesh name: ", name );
                 vertGlobalLocal.clear();
                 normGlobalLocal.clear();
                 tcoordGlobalLocal.clear();
@@ -515,12 +523,12 @@ public class Mesh
     private uint[ uint ] tcoordGlobalLocal;
 
     public Texture[ string ] textureFromMaterial;
+    public SubMesh[] subMeshes;
     private string[ string ] materialFromMeshName;
     private uint[] vaos;
     private uint ubo;
     private PerObjectUBO uboStruct;
     private float testRotation = 0;
-    private SubMesh[] subMeshes;
     private Vec3 position = Vec3( 0, 0, 0 );
     private float scale = 1;
 }
