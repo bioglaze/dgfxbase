@@ -38,7 +38,6 @@ void bindGLFunc( void** ptr, string symName )
     *ptr = sym;
 }
 
-// Reads a true-color, uncompressed TGA
 private void readTGA( string path, out int width, out int height, out int bits, out byte[] pixelData )
 {
     try

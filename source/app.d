@@ -62,8 +62,8 @@ void main()
     //Mesh cube = new Mesh( "assets/cube.obj", "" );
     //cube.setPosition( Vec3( 9, 2, 180 ) );
 
-    Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
-    sponza.setScale( 0.5f );
+    //Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
+    //sponza.setScale( 0.5f );
 
     StopWatch sw;
     sw.start();
@@ -89,11 +89,17 @@ void main()
     Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );
     Texture rleTex = new Texture( "assets/textures/vase_plant_rle.tga" );
+    Texture rleTex2 = new Texture( "assets/textures/vase_round_rle.tga" );
     rleTex.makeResident();
 
     GLuint64[ 32 ] textures;
+    
+    for (int i = 0; i < 32; ++i)
+    {
+        textures[ i ] = rleTex2.getHandle64();
+    }
 
-    int i = 0;
+    /*int i = 0;
     foreach (texture; sponza.textureFromMaterial)
     {
         textures[ i ] = texture.getHandle64();
@@ -109,10 +115,10 @@ void main()
         }
 
         ++i;
-    }
+    }*/
 
     //textures[ 30 ] = gliderTex.getHandle64();
-    textures[ 30 ] = rleTex.getHandle64();
+    textures[ 30 ] = rleTex2.getHandle64();
     textures[ 31 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();
@@ -252,7 +258,7 @@ void main()
         
         //Renderer.renderMesh( cube, shader, dirLight );
 
-        Renderer.renderMesh( sponza, shader, dirLight, camera.getProjection(), camera.getView() );
+        //Renderer.renderMesh( sponza, shader, dirLight, camera.getProjection(), camera.getView() );
 
         Renderer.renderMesh( armadillo, shader, dirLight, camera.getProjection(), camera.getView() );
 

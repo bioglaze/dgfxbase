@@ -301,19 +301,43 @@ public abstract class Renderer
 
     public static void generateVAO( Vertex[] vertices, Face[] faces, string debugName, out uint vao )
     {
+        float[] positions = new float[ vertices.length * 3 ];
+        float[] texcoords = new float[ vertices.length * 2 ];
+        float[] normals   = new float[ vertices.length * 3 ];
+
+        for (int vertexIndex = 0; vertexIndex < vertices.length; ++vertexIndex)
+        {
+            positions[ vertexIndex * 3 + 0 ] = vertices[ vertexIndex ].pos[ 0 ];
+            positions[ vertexIndex * 3 + 1 ] = vertices[ vertexIndex ].pos[ 1 ];
+            positions[ vertexIndex * 3 + 2 ] = vertices[ vertexIndex ].pos[ 2 ];
+            
+            texcoords[ vertexIndex * 2 + 0 ] = vertices[ vertexIndex ].uv[ 0 ];
+            texcoords[ vertexIndex * 2 + 1 ] = vertices[ vertexIndex ].uv[ 1 ];
+            
+            normals[ vertexIndex * 3 + 0 ] = vertices[ vertexIndex ].normal[ 0 ];
+            normals[ vertexIndex * 3 + 1 ] = vertices[ vertexIndex ].normal[ 1 ];
+            normals[ vertexIndex * 3 + 2 ] = vertices[ vertexIndex ].normal[ 2 ];
+        }
+
         glCreateVertexArrays( 1, &vao );
         glBindVertexArray( vao );
         glObjectLabel( GL_VERTEX_ARRAY, vao, -1, toStringz( debugName ) );
 
-        uint vbo, ibo;
-        glCreateBuffers( 1, &vbo );
-        glObjectLabel( GL_BUFFER, vbo, -1, toStringz( "vbo" ) );
+        uint positionVBO, uvVBO, normalVBO, ibo;
+        glCreateBuffers( 1, &positionVBO );
+        glObjectLabel( GL_BUFFER, positionVBO, -1, toStringz( "positionVBO" ) );
+        glCreateBuffers( 1, &uvVBO );
+        glObjectLabel( GL_BUFFER, uvVBO, -1, toStringz( "uvVBO" ) );
+        glCreateBuffers( 1, &normalVBO );
+        glObjectLabel( GL_BUFFER, normalVBO, -1, toStringz( "normalVBO" ) );
 
         const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        glNamedBufferStorage( vbo, vertices.length * Vertex.sizeof, vertices.ptr, flags );
-        glVertexArrayVertexBuffer( vao, 0, vbo, 0, Vertex.sizeof );
-        glVertexArrayVertexBuffer( vao, 1, vbo, 3 * 4, Vertex.sizeof );
-        glVertexArrayVertexBuffer( vao, 2, vbo, (2 + 3) * 4, Vertex.sizeof );
+        glNamedBufferStorage( positionVBO, positions.length * 4, positions.ptr, flags );
+        glNamedBufferStorage( uvVBO, texcoords.length * 4, texcoords.ptr, flags );
+        glNamedBufferStorage( normalVBO, normals.length * 4, normals.ptr, flags );
+        glVertexArrayVertexBuffer( vao, 0, positionVBO, 0, 3 * 4 );
+        glVertexArrayVertexBuffer( vao, 1, uvVBO, 0, 2 * 4 );
+        glVertexArrayVertexBuffer( vao, 2, normalVBO, 0, 3 * 4 );
 
         glCreateBuffers( 1, &ibo );
         glObjectLabel( GL_BUFFER, ibo, -1, toStringz( "ibo" ) );

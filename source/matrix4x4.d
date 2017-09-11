@@ -149,7 +149,22 @@ public align(16) struct Matrix4x4
 
         checkForNaN();
     }
-	
+
+    /*void makeProjection( float fovDegrees, float aspect, float nearDepth, float farDepth )
+    {
+        const float f = 1.0f / tan( (0.5f * fovDegrees) * PI / 180.0f );
+
+        m =
+        [
+            f / aspect, 0, 0,  0,
+            0, -f, 0,  0,
+            0, 0, farDepth / (nearDepth - farDepth), -1,
+            0, 0, (nearDepth * farDepth) / (nearDepth - farDepth),  0
+        ];
+
+        checkForNaN();
+    }*/
+
     void makeProjection( float fovDegrees, float aspect, float nearDepth, float farDepth )
     {
         assert( !approxEqual( (farDepth - nearDepth), 0.0f ), "division by 0" );
