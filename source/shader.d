@@ -1,4 +1,7 @@
 import derelict.opengl3.gl3;
+import derelict.opengl3.wgl;
+import derelict.opengl3.glx;
+import derelict.opengl3.internal;
 import std.exception;
 import std.file;
 import std.stdio;
@@ -14,14 +17,15 @@ __gshared
     da_glSpecializeShader glSpecializeShader;
 }
 
-import derelict.opengl3.wgl;
-import derelict.opengl3.internal;
-
 void* loadGLFunc( string symName )
 {
     version( Windows )
     {
         return cast( void* )wglGetProcAddress( symName.toStringz() );
+    }
+    version( linux )
+    {
+        return cast( void* )glXGetProcAddress( symName.toStringz() );
     }
 }
 

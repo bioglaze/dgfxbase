@@ -1,5 +1,8 @@
 import core.stdc.string;
 import derelict.opengl3.gl3;
+import derelict.opengl3.wgl;
+import derelict.opengl3.glx;
+import derelict.opengl3.internal;
 import renderer;
 import std.exception;
 import std.stdio;
@@ -17,14 +20,15 @@ __gshared
     da_glMakeTextureHandleResidentARB glMakeTextureHandleResidentARB;
 }
 
-import derelict.opengl3.wgl;
-import derelict.opengl3.internal;
-
 void* loadGLFunc( string symName )
 {
     version( Windows )
     {
         return cast( void* )wglGetProcAddress( symName.toStringz() );
+    }
+    version( linux )
+    {
+        return cast( void* )glXGetProcAddress( symName.toStringz() );
     }
 }
 
