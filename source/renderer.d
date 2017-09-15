@@ -265,7 +265,7 @@ public abstract class Renderer
     {
         //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        static const float[] black = [ 0.0f, 0.0f, 0.0f, 0.0f ];
+        static const float[] black = [ 0.2f, 0.2f, 0.2f, 0.0f ];
         glClearBufferfv( GL_COLOR, 0, black.ptr );
 
         static const float[] clear = [ 1 ];
@@ -291,7 +291,7 @@ public abstract class Renderer
         
         for (int subMeshIndex = 0; subMeshIndex < mesh.getSubMeshCount(); ++subMeshIndex)
         {
-            writeln("mesh.subMeshes[ ", subMeshIndex, " ].textureIndex: ", mesh.subMeshes[ subMeshIndex ].textureIndex, ", path: ", mesh.subMeshes[ subMeshIndex ].texturePath );
+            //writeln("mesh.subMeshes[ ", subMeshIndex, " ].textureIndex: ", mesh.subMeshes[ subMeshIndex ].textureIndex, ", path: ", mesh.subMeshes[ subMeshIndex ].texturePath );
             mesh.bind( subMeshIndex );
             mesh.updateUBO( viewToClip, worldToView, mesh.subMeshes[ subMeshIndex ].textureIndex );
             shader.use();

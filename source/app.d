@@ -59,8 +59,8 @@ void main()
     SDL_GL_SetSwapInterval( 1 );
     SDL_SetWindowTitle( win, "DGFXBase" );
 
-    //Mesh cube = new Mesh( "assets/cube.obj", "" );
-    //cube.setPosition( Vec3( 9, 2, 180 ) );
+    Mesh cube = new Mesh( "assets/cube.obj", "" );
+    cube.setPosition( Vec3( 9, 2, 180 ) );
 
     //Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
     //sponza.setScale( 0.5f );
@@ -256,7 +256,7 @@ void main()
 
         Renderer.clearScreen();
         
-        //Renderer.renderMesh( cube, shader, dirLight );
+        Renderer.renderMesh( cube, shader, dirLight, camera.getProjection(), camera.getView() );
 
         //Renderer.renderMesh( sponza, shader, dirLight, camera.getProjection(), camera.getView() );
 

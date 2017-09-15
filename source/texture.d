@@ -81,6 +81,7 @@ private void readTGA( string path, out int width, out int height, out int bits, 
         f.rawRead( specEnd );
 
         bits = specEnd[ 0 ];
+        writeln( path, " has ", bits, " bits, width ", width, ", height ", height );
 
         if (idLength[ 0 ] > 0)
         {
@@ -148,6 +149,13 @@ private void readTGA( string path, out int width, out int height, out int bits, 
                 pos += (bits / 8) * count;
             }
         }
+
+        for (int i = 0; i < width * height; i += 3)
+        {
+            pixelData[ i * 3 + 0 ] = cast(byte)127;
+            pixelData[ i * 3 + 1 ] = cast(byte)0;
+            pixelData[ i * 3 + 2 ] = cast(byte)127;
+        }
     }
     catch (Exception e)
     {
@@ -170,9 +178,11 @@ public class Texture
         byte[] pixelData;
         int bits;
         readTGA( path2, width, height, bits, pixelData );
-        
+
         glCreateTextures( GL_TEXTURE_2D, 1, &handle );
         glBindTextureUnit( 0, handle );
+
+        glPixelStorei( GL_UNPACK_ALIGNMENT, bits == 32 ? 4 : 1 );
 
         glTextureStorage2D( handle, 1, GL_SRGB8_ALPHA8, width, height );
         glTextureSubImage2D( handle, 0, 0, 0, width, height, bits == 32 ? GL_BGRA : GL_BGR, GL_UNSIGNED_BYTE, pixelData.ptr );
