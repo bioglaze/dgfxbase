@@ -195,6 +195,7 @@ public class Texture
 
         glGenerateTextureMipmap( handle );
         handle64 = glGetTextureHandleARB( handle );
+        glObjectLabel( GL_TEXTURE, handle, -1, toStringz( path2 ) );
     }
 
     public GLuint64 getHandle64() const

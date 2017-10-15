@@ -194,6 +194,8 @@ public abstract class Renderer
         glNamedBufferStorage( textUbo, PerObjectUBO.sizeof, &textUboStruct, flags );
 
         orthoMat.makeProjection( 0, screenWidth, screenHeight, 0, -1, 1 );
+
+        glCreateQueries( GL_TIME_ELAPSED, 4, queries.ptr );
     }
 
     public static void drawText( string text, Shader shader, Font font, Texture fontTex, float x, float y )
@@ -358,6 +360,24 @@ public abstract class Renderer
         glVertexArrayAttribBinding( vao, 2, 2 );
     }
 
+    public static void beginQuery()
+    {
+        glBeginQuery( GL_TIME_ELAPSED, queries[ frameIndex & 3 ] );
+    }
+
+    public static void endQuery()
+    {
+        glEndQuery( GL_TIME_ELAPSED );
+
+        if (frameIndex > 3)
+        {
+            GLuint64 timeStamp;
+            const uint index = ((frameIndex & 3) - 3) & 3;
+            glGetQueryObjectui64v( queries[ index ], GL_QUERY_RESULT, &timeStamp );
+            queryTime = timeStamp / 1000000.0f;
+        }
+    }
+
     private static LightUBO lightUboStruct;
     private static uint lightUbo;
     private static TextureUBO textureUboStruct;
@@ -368,4 +388,7 @@ public abstract class Renderer
     private static string cachedText;
     private static int textFaceLength;
     private static Matrix4x4 orthoMat;
+    private static uint[ 4 ] queries;
+    public static int frameIndex;
+    public static float queryTime;
 }

@@ -96,7 +96,7 @@ void main()
     
     for (int i = 0; i < 32; ++i)
     {
-        textures[ i ] = rleTex2.getHandle64();
+        textures[ i ] = fontTex.getHandle64();
     }
 
     /*int i = 0;
@@ -254,6 +254,8 @@ void main()
 
         camera.updateMatrix();
 
+        Renderer.beginQuery();
+
         Renderer.clearScreen();
         
         Renderer.renderMesh( cube, shader, dirLight, camera.getProjection(), camera.getView() );
@@ -268,9 +270,11 @@ void main()
         aabbLines.updateUBO( camera.getProjection(), camera.getView() );
         Renderer.renderLines( aabbLines, lineShader );
 
-        Renderer.drawText( "This is text", shader, font, fontTex, 100, 70 );
+        Renderer.drawText( format("frame time GPU ms: %f", Renderer.queryTime), shader, font, fontTex, 100, 70 );
 
+        Renderer.endQuery();
         SDL_GL_SwapWindow( win );
+        ++Renderer.frameIndex;
 
         endFrameUs = sw.peek().usecs;
         deltaUs = endFrameUs - startFrameUs;
