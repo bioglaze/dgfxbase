@@ -17,6 +17,8 @@ import vec3;
 
 void main()
 {
+    immutable bool useBindless = false;
+
     DerelictSDL2.load();
         
     if (SDL_Init( SDL_INIT_VIDEO ) < 0)
@@ -76,9 +78,20 @@ void main()
     armadillo.setPosition( Vec3( 0 + xoff, -5 + yoff, -15 ) );
     armadillo.setScale( 0.05f );
     
-    Shader shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
-    Shader lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
+    Shader shader;
+    Shader lineShader;
     
+    if (useBindless)
+    {
+        shader = new Shader( "assets/shader.vert", "assets/shader_bindless.frag" );
+        lineShader = new Shader( "assets/line_shader.vert.spv", "assets/line_shader.frag.spv" );
+    }
+    else
+    {
+        shader = new Shader( "assets/shader.vert", "assets/shader.frag" );
+        lineShader = new Shader( "assets/line_shader.vert", "assets/line_shader.frag" );
+    }
+        
     Camera camera = new Camera();
     camera.setProjection( 45, screenWidth / cast(float)screenHeight, 1, 800 );
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );

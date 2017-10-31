@@ -80,7 +80,7 @@ extern(System) private
         {
         }
 
-        if (severity != undefinedSeverity && severity != GL_DEBUG_SEVERITY_LOW_ARB)
+        if (severity != undefinedSeverity && severity != GL_DEBUG_SEVERITY_LOW_ARB && severity != GL_DEBUG_SEVERITY_MEDIUM_ARB)
         {
             assert( false );
         }

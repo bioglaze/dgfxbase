@@ -8,6 +8,8 @@ import std.exception;
 import std.stdio;
 import std.string;
 
+private immutable bool useBindless = false;
+
 extern(System) @nogc nothrow
 {
     alias da_glGetTextureHandleARB = GLuint function( GLuint );
@@ -194,7 +196,12 @@ public class Texture
         glTextureParameteri( handle, GL_TEXTURE_WRAP_R, GL_REPEAT );
 
         glGenerateTextureMipmap( handle );
-        handle64 = glGetTextureHandleARB( handle );
+
+        if (useBindless)
+        {
+            handle64 = glGetTextureHandleARB( handle );
+        }
+        
         glObjectLabel( GL_TEXTURE, handle, -1, toStringz( path2 ) );
     }
 
@@ -205,7 +212,10 @@ public class Texture
 
     public void makeResident()
     {
-        glMakeTextureHandleResidentARB( handle64 );
+        if (useBindless)
+        {
+            glMakeTextureHandleResidentARB( handle64 );
+        }
     }
 
     public void bind( int unit )
