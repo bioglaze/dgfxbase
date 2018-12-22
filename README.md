@@ -14,7 +14,7 @@ OpenGL 4.5 basecode using D language and Derelict SDL and OpenGL libraries.
   
 ## Building (Windows)
 
-  - (optional) If you want to modify the SPIR-V shaders, Install VulkanSDK 1.0.46.0
+  - (optional) If you want to modify the SPIR-V shaders, Install VulkanSDK.
   - (optional) If you want to modify the SPIR-V shaders, Run `compile_shaders.bat` to compile GLSL shaders into SPIR-V.
   - If you use VisualD, navigate into the project directory in command prompt and run `dub generate visuald`. Else run `dub build`
   - When you run the project, you should see some meshes and lines.
