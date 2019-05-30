@@ -1,5 +1,5 @@
 import camera;
-import derelict.opengl3.gl3;
+import derelict.opengl;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
 import dirlight;
@@ -101,9 +101,9 @@ void main()
     
     Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );
-    Texture rleTex = new Texture( "assets/textures/vase_plant_rle.tga" );
-    Texture rleTex2 = new Texture( "assets/textures/vase_round_rle.tga" );
-    rleTex.makeResident();
+    //Texture rleTex = new Texture( "assets/textures/vase_plant_rle.tga" );
+    //Texture rleTex2 = new Texture( "assets/textures/vase_round_rle.tga" );
+    //rleTex.makeResident();
 
     GLuint64[ 32 ] textures;
     
@@ -131,7 +131,7 @@ void main()
     }*/
 
     //textures[ 30 ] = gliderTex.getHandle64();
-    textures[ 30 ] = rleTex2.getHandle64();
+    textures[ 30 ] = gliderTex.getHandle64();
     textures[ 31 ] = fontTex.getHandle64();
     gliderTex.makeResident();
     fontTex.makeResident();

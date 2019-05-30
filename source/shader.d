@@ -1,7 +1,5 @@
-import derelict.opengl3.gl3;
-import derelict.opengl3.wgl;
-import derelict.opengl3.glx;
-import derelict.opengl3.internal;
+import derelict.opengl;
+import derelict.opengl.glloader;
 import std.exception;
 import std.file;
 import std.stdio;
@@ -17,33 +15,11 @@ __gshared
     da_glSpecializeShader glSpecializeShader;
 }
 
-void* loadGLFunc( string symName )
-{
-    version( Windows )
-    {
-        return cast( void* )wglGetProcAddress( symName.toStringz() );
-    }
-    version( linux )
-    {
-        return cast( void* )glXGetProcAddress( symName.toStringz() );
-    }
-}
-
-void bindGLFunc( void** ptr, string symName )
-{
-    import derelict.util.exception : SymbolLoadException;
-
-    auto sym = loadGLFunc( symName );
-    if( !sym )
-        throw new SymbolLoadException( "Failed to load OpenGL symbol [" ~ symName ~ "]" );
-    *ptr = sym;
-}
-
 public class Shader
 {
     public static void loadExtensionFunctions()
     {
-        bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
+        loader.bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
     }
 
     this( string vertexPath, string fragmentPath )
@@ -227,5 +203,6 @@ public class Shader
     }
 
     private GLuint program;
+    private static GLLoader loader;
 }
 

@@ -1,5 +1,5 @@
 import core.stdc.string;
-import derelict.opengl3.gl3;
+import derelict.opengl;
 import Font;
 import matrix4x4;
 import mesh;
@@ -175,7 +175,7 @@ public abstract class Renderer
         glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
         glEnable( GL_DEBUG_OUTPUT );
         glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
-        glEnable( GL_FRAMEBUFFER_SRGB );
+        //glEnable( GL_FRAMEBUFFER_SRGB );
         glEnable( GL_CULL_FACE );
         glEnable( GL_DEPTH_TEST );
         glDepthFunc( GL_LESS );

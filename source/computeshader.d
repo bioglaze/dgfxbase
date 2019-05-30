@@ -1,4 +1,4 @@
-import derelict.opengl3.gl3;
+import derelict.opengl;
 import shader;
 import std.exception;
 import std.file;

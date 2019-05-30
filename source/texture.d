@@ -1,8 +1,6 @@
 import core.stdc.string;
-import derelict.opengl3.gl3;
-import derelict.opengl3.wgl;
-import derelict.opengl3.glx;
-import derelict.opengl3.internal;
+import derelict.opengl;
+import derelict.opengl.glloader;
 import renderer;
 import std.exception;
 import std.stdio;
@@ -20,28 +18,6 @@ __gshared
 {
     da_glGetTextureHandleARB glGetTextureHandleARB;
     da_glMakeTextureHandleResidentARB glMakeTextureHandleResidentARB;
-}
-
-void* loadGLFunc( string symName )
-{
-    version( Windows )
-    {
-        return cast( void* )wglGetProcAddress( symName.toStringz() );
-    }
-    version( linux )
-    {
-        return cast( void* )glXGetProcAddress( symName.toStringz() );
-    }
-}
-
-void bindGLFunc( void** ptr, string symName )
-{
-    import derelict.util.exception : SymbolLoadException;
-
-    auto sym = loadGLFunc( symName );
-    if( !sym )
-        throw new SymbolLoadException( "Failed to load OpenGL symbol [" ~ symName ~ "]" );
-    *ptr = sym;
 }
 
 private void readTGA( string path, out int width, out int height, out int bits, out byte[] pixelData )
@@ -167,10 +143,11 @@ private void readTGA( string path, out int width, out int height, out int bits, 
 
 public class Texture
 {
+    
     public static void loadExtensionFunctions()
     {
-        bindGLFunc( cast(void**)&glGetTextureHandleARB, "glGetTextureHandleARB" );
-        bindGLFunc( cast(void**)&glMakeTextureHandleResidentARB, "glMakeTextureHandleResidentARB" );
+        loader.bindGLFunc( cast(void**)&glGetTextureHandleARB, "glGetTextureHandleARB" );
+        loader.bindGLFunc( cast(void**)&glMakeTextureHandleResidentARB, "glMakeTextureHandleResidentARB" );
     }
 
     this( string path2 )
@@ -237,4 +214,5 @@ public class Texture
     private GLuint handle;
     private GLuint64 handle64;
     public string path;
+    private static GLLoader loader;
 }
