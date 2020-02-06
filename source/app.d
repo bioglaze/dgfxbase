@@ -2,6 +2,8 @@ import camera;
 import derelict.opengl;
 import derelict.sdl2.sdl;
 import derelict.util.exception;
+import std.datetime;
+import std.datetime.stopwatch : benchmark, StopWatch;
 import dirlight;
 import Font;
 import intersection;
@@ -67,10 +69,11 @@ void main()
     //Mesh sponza = new Mesh( "assets/sponza.obj", "assets/sponza_materials.txt" );
     //sponza.setScale( 0.5f );
 
-    StopWatch sw;
+    //StopWatch sw;
+    std.datetime.stopwatch.StopWatch sw;
     sw.start();
     Mesh armadillo = new Mesh( "assets/armadillo.obj", "" );
-    long execMs = sw.peek().msecs;
+    long execMs = sw.peek.total!"msecs";
     //writeln( "Armadillo has ", armadillo.getElementCount( 0 ), " triangles" );
     //writeln( "Armadillo loading took ", execMs, " ms" );
     const float xoff = -4;
@@ -142,7 +145,7 @@ void main()
 
     sw.start();
     Octree octree = new Octree( armadillo.getSubMeshVertices( 0 ), armadillo.getSubMeshIndices( 0 ), 2.0f, 0.9f );
-    execMs = sw.peek().msecs;
+    execMs = sw.peek.total!"msecs";
     writeln( "Armadillo voxelization took ", execMs, " ms" );
 
     sw.start();
@@ -157,7 +160,7 @@ void main()
 
     Lines octreeLines = new Lines( armadilloLinesWorldSpace );
 
-    execMs = sw.peek().msecs;
+    execMs = sw.peek.total!"msecs";
     writeln( "Armadillo line creation took ", execMs, " ms" );
 
     Vec3 aabbPos = Vec3( 5, 5, -22 );
@@ -181,7 +184,7 @@ void main()
 
     while (true)
     {
-        startFrameUs = sw.peek().usecs;
+        startFrameUs = sw.peek.total!"msecs";
 
         SDL_Event e;
 
@@ -289,7 +292,7 @@ void main()
         SDL_GL_SwapWindow( win );
         ++Renderer.frameIndex;
 
-        endFrameUs = sw.peek().usecs;
+        endFrameUs = sw.peek.total!"msecs";
         deltaUs = endFrameUs - startFrameUs;
         /*const(char)* error = SDL_GetError();
 
