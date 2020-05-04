@@ -1,6 +1,5 @@
 import core.stdc.string;
-import derelict.opengl;
-import derelict.opengl.glloader;
+import bindbc.opengl;
 import renderer;
 import std.exception;
 import std.stdio;
@@ -143,13 +142,6 @@ private void readTGA( string path, out int width, out int height, out int bits, 
 
 public class Texture
 {
-    
-    public static void loadExtensionFunctions()
-    {
-        loader.bindGLFunc( cast(void**)&glGetTextureHandleARB, "glGetTextureHandleARB" );
-        loader.bindGLFunc( cast(void**)&glMakeTextureHandleResidentARB, "glMakeTextureHandleResidentARB" );
-    }
-
     this( string path2 )
     {
         this.path = path2;
@@ -214,5 +206,4 @@ public class Texture
     private GLuint handle;
     private GLuint64 handle64;
     public string path;
-    private static GLLoader loader;
 }

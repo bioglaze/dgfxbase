@@ -1,7 +1,6 @@
 import camera;
-import derelict.opengl;
-import derelict.sdl2.sdl;
-import derelict.util.exception;
+import bindbc.opengl;
+import bindbc.sdl;
 import std.datetime;
 import std.datetime.stopwatch : benchmark, StopWatch;
 import dirlight;
@@ -21,7 +20,19 @@ void main()
 {
     immutable bool useBindless = false;
 
-    DerelictSDL2.load();
+    SDLSupport ret = loadSDL();
+
+    if (ret != sdlSupport)
+    {
+        if (ret == SDLSupport.noLibrary)
+        {
+            throw new Error( "Could not load SDL library!" );
+        }
+        else if (ret == SDLSupport.badLibrary)
+        {
+            throw new Error( "Bad SDL library!" );
+        }
+    }
         
     if (SDL_Init( SDL_INIT_VIDEO ) < 0)
     {
@@ -42,13 +53,6 @@ void main()
     SDL_Window* win = SDL_CreateWindow( "GFX base", SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN );
 
-    ShouldThrow missingSymFunc( string symName )
-    {
-        return (symName == "glGetSubroutineUniformLocation" || symName == "glVertexAttribL1d" || symName == "glEnableClientStateiEXT") ? ShouldThrow.No : ShouldThrow.Yes;
-    }
-
-    DerelictGL3.missingSymbolCallback = &missingSymFunc;
-    DerelictGL3.load();
     const auto context = SDL_GL_CreateContext( win );
         
     if (!context)
@@ -56,7 +60,7 @@ void main()
         throw new Error( "Failed to create GL context!" );
     }
 
-    DerelictGL3.reload();
+    GLSupport re = loadOpenGL();
       
     Renderer.initGL( screenWidth, screenHeight );
 

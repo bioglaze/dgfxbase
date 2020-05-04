@@ -1,5 +1,4 @@
-import derelict.opengl;
-import derelict.opengl.glloader;
+import bindbc.opengl;
 import std.exception;
 import std.file;
 import std.stdio;
@@ -17,11 +16,6 @@ __gshared
 
 public class Shader
 {
-    public static void loadExtensionFunctions()
-    {
-        loader.bindGLFunc( cast(void**)&glSpecializeShader, "glSpecializeShaderARB" );
-    }
-
     this( string vertexPath, string fragmentPath )
     {
         try
@@ -203,6 +197,5 @@ public class Shader
     }
 
     private GLuint program;
-    private static GLLoader loader;
 }
 

@@ -1,5 +1,5 @@
 import core.stdc.string;
-import derelict.opengl;
+import bindbc.opengl;
 import matrix4x4;
 import renderer;
 import std.file;

@@ -1,12 +1,15 @@
 {
-	"name": "dgfxbase",
-	"targetType": "executable",
-	"description": "GFX boilerplate",
-	"authors": ["Timo Wiren"],
-	"homepage": "http://twiren.kapsi.fi",
-	"license": "MIT",
-	"dependencies": {
-		"derelict-sdl2": ">=2.0.0",
-		"derelict-gl3": ">=1.0.18"
-	}
+  "name": "dgfxbase",
+  "targetType": "executable",
+  "description": "GFX boilerplate",
+  "authors": [ "Timo Wiren" ],
+  "homepage": "http://twiren.kapsi.fi",
+  "license": "MIT",
+  "dependencies": {
+    "bindbc-sdl": "~>0.1.0",
+    "bindbc-opengl": "~>0.1.0"
+  },
+  "versions": [
+    "GL_45"
+  ]
 }

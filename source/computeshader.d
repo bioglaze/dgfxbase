@@ -1,4 +1,4 @@
-import derelict.opengl;
+import bindbc.opengl;
 import shader;
 import std.exception;
 import std.file;

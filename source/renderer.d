@@ -1,5 +1,5 @@
 import core.stdc.string;
-import derelict.opengl;
+import bindbc.opengl;
 import Font;
 import matrix4x4;
 import mesh;
@@ -33,12 +33,12 @@ extern(System) private
 
         switch (source)
         {
-            case GL_DEBUG_SOURCE_API_ARB:             sourceFmt = "API"; break;
-            case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:   sourceFmt = "WINDOW_SYSTEM"; break;
-            case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB: sourceFmt = "SHADER_COMPILER"; break;
-            case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:     sourceFmt = "THIRD_PARTY"; break;
-            case GL_DEBUG_SOURCE_APPLICATION_ARB:     sourceFmt = "APPLICATION"; break;
-            case GL_DEBUG_SOURCE_OTHER_ARB:           sourceFmt = "OTHER"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_API:             sourceFmt = "API"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_WINDOW_SYSTEM:   sourceFmt = "WINDOW_SYSTEM"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_SHADER_COMPILER: sourceFmt = "SHADER_COMPILER"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_THIRD_PARTY:     sourceFmt = "THIRD_PARTY"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_APPLICATION:     sourceFmt = "APPLICATION"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SOURCE_OTHER:           sourceFmt = "OTHER"; break;
             default: break;
         }
 
@@ -46,12 +46,12 @@ extern(System) private
 
         switch (type)
         {
-            case GL_DEBUG_TYPE_ERROR_ARB:               typeFmt = "ERROR"; break;
-            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB: typeFmt = "DEPRECATED_BEHAVIOR"; break;
-            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:  typeFmt = "UNDEFINED_BEHAVIOR"; break;
-            case GL_DEBUG_TYPE_PORTABILITY_ARB:         typeFmt = "PORTABILITY"; break;
-            case GL_DEBUG_TYPE_PERFORMANCE_ARB:         typeFmt = "PERFORMANCE"; break;
-            case GL_DEBUG_TYPE_OTHER_ARB:               typeFmt = "OTHER"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_ERROR:               typeFmt = "ERROR"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeFmt = "DEPRECATED_BEHAVIOR"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typeFmt = "UNDEFINED_BEHAVIOR"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_PORTABILITY:         typeFmt = "PORTABILITY"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_PERFORMANCE:         typeFmt = "PERFORMANCE"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_TYPE_OTHER:               typeFmt = "OTHER"; break;
             default: break;
         }
 
@@ -59,9 +59,9 @@ extern(System) private
 
         switch (severity)
         {
-            case GL_DEBUG_SEVERITY_HIGH_ARB:   severityFmt = "HIGH";   break;
-            case GL_DEBUG_SEVERITY_MEDIUM_ARB: severityFmt = "MEDIUM"; break;
-            case GL_DEBUG_SEVERITY_LOW_ARB:    severityFmt = "LOW"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SEVERITY_HIGH:   severityFmt = "HIGH";   break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SEVERITY_MEDIUM: severityFmt = "MEDIUM"; break;
+            case bindbc.opengl.bind.arb.core_43.GL_DEBUG_SEVERITY_LOW:    severityFmt = "LOW"; break;
             default: break;
         }
 
@@ -80,7 +80,7 @@ extern(System) private
         {
         }
 
-        if (severity != undefinedSeverity && severity != GL_DEBUG_SEVERITY_LOW_ARB && severity != GL_DEBUG_SEVERITY_MEDIUM_ARB)
+        if (severity != undefinedSeverity && severity != bindbc.opengl.bind.arb.core_43.GL_DEBUG_SEVERITY_LOW && severity != bindbc.opengl.bind.arb.core_43.GL_DEBUG_SEVERITY_MEDIUM)
         {
             assert( false );
         }
@@ -168,13 +168,13 @@ public abstract class Renderer
 {
     public static void initGL( int screenWidth, int screenHeight )
     {
-        Texture.loadExtensionFunctions();
-        Shader.loadExtensionFunctions();
+        //Texture.loadExtensionFunctions();
+        //Shader.loadExtensionFunctions();
 
-        glDebugMessageCallback( &loggingCallbackOpenGL, null );
-        glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
-        glEnable( GL_DEBUG_OUTPUT );
-        glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );
+        bindbc.opengl.bind.arb.core_43.glDebugMessageCallback( &loggingCallbackOpenGL, null );
+        bindbc.opengl.bind.arb.core_43.glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, null, GL_TRUE );
+        glEnable( bindbc.opengl.bind.arb.core_43.GL_DEBUG_OUTPUT );
+        glEnable( bindbc.opengl.bind.arb.core_43.GL_DEBUG_OUTPUT_SYNCHRONOUS );
         //glEnable( GL_FRAMEBUFFER_SRGB );
         glEnable( GL_CULL_FACE );
         glEnable( GL_DEPTH_TEST );
