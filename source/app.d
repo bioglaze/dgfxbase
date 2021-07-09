@@ -15,6 +15,7 @@ import std.stdio;
 import std.string;
 import texture;
 import vec3;
+static import std.datetime.stopwatch;
 
 void main()
 {
@@ -104,7 +105,7 @@ void main()
     camera.lookAt( Vec3( 0, 0, 0 ), Vec3( 0, 0, 200 ) );
     camera.moveForward( -200 );
 
-    Font font = new Font( "assets/font.bin" );
+    Font.Font font = new Font.Font( "assets/font.bin" );
     
     Texture fontTex = new Texture( "assets/font.tga" );
     Texture gliderTex = new Texture( "assets/glider.tga" );

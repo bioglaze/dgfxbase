@@ -3,7 +3,7 @@ module Font;
 import std.stdio;
 import renderer;
 
-class Font
+public class Font
 {
     this( string bmFontBinaryMetadataPath )
     {

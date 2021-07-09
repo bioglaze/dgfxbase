@@ -198,7 +198,7 @@ public abstract class Renderer
         glCreateQueries( GL_TIME_ELAPSED, 4, queries.ptr );
     }
 
-    public static void drawText( string text, Shader shader, Font font, Texture fontTex, float x, float y )
+    public static void drawText( string text, Shader shader, Font.Font font, Texture fontTex, float x, float y )
     {
         if (text != cachedText)
         {     

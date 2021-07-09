@@ -2,6 +2,7 @@ import matrix4x4;
 import std.math: approxEqual;
 import quaternion;
 import vec3;
+static import std.math.operations;
 
 public class Camera
 {
@@ -28,7 +29,7 @@ public class Camera
 
     public void moveRight( float amount )
     {
-        if (!approxEqual( amount, 0 ))
+        if (!std.math.operations.isClose( amount, 0 ))
         {
             position = position + rotation * Vec3( amount, 0, 0 );
         }
@@ -41,7 +42,7 @@ public class Camera
 
     public void moveForward( float amount )
     {
-        if (!approxEqual( amount, 0 ))
+        if (!std.math.operations.isClose( amount, 0 ))
         {
             position = position + rotation * Vec3( 0, 0, amount );
         }
@@ -54,7 +55,7 @@ public class Camera
 
         Quaternion newRotation;
 
-        if (approxEqual( axis.y, 0 ))
+        if (std.math.operations.isClose( axis.y, 0 ))
         {
             newRotation = rotation * rot;
         }

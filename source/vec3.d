@@ -1,4 +1,5 @@
-import std.math: abs, approxEqual, sqrt;
+import std.math: abs, sqrt;
+static import std.math.operations;
 
 public Vec3 cross( Vec3 v1, Vec3 v2 ) @nogc
 {
@@ -15,7 +16,7 @@ public float dot( Vec3 v1, Vec3 v2 ) @nogc
 public void normalize( ref Vec3 v )
 {
     const float len = length( v );
-    assert( !approxEqual( len, 0.0f ), "length is 0" );
+    assert( !std.math.operations.isClose( len, 0.0f ), "length is 0" );
 
     v.x /= len;
     v.y /= len;
@@ -29,7 +30,7 @@ public float length( ref Vec3 v ) @nogc
 
 private bool isAlmost( Vec3 v1, Vec3 v2 )
 {
-    return approxEqual( v1.x, v2.x ) && approxEqual( v1.y, v2.y ) && approxEqual( v1.z, v2.z );
+    return std.math.operations.isClose( v1.x, v2.x ) && std.math.operations.isClose( v1.y, v2.y ) && std.math.operations.isClose( v1.z, v2.z );
 }
 
 struct Vec3
@@ -73,7 +74,7 @@ struct Vec3
         }
         else static if (op == "/")
         {
-            assert( !approxEqual( f, 0.0f ), "f is 0" );
+            assert( !std.math.operations.isClose( f, 0.0f ), "f is 0" );
             return Vec3( x / f, y / f, z / f );
         }
         else static assert( false, "operator " ~ op ~ " not implemented" );
@@ -103,7 +104,7 @@ unittest
 {
     Vec3 v = Vec3( 6, 6, 6 );
     normalize( v );
-    assert( approxEqual( length( v ), 1 ), "Vec3 Length failed" );
+    assert( std.math.operations.isClose( length( v ), 1 ), "Vec3 Length failed" );
 
     assert( isAlmost( cross( Vec3( 1, 0, 0 ), Vec3( 0, 1, 0 ) ), Vec3( 0, 0, 1 ) ), "Vec3 Cross failed" );
 }
